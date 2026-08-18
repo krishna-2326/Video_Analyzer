@@ -25,5 +25,5 @@ ENV WHISPER_MODEL=base
 # Expose port
 EXPOSE 8000
 
-# Start FastAPI server
-CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"]
+# Start FastAPI server on $PORT (dynamically assigned by cloud providers like Render)
+CMD ["sh", "-c", "uvicorn server:app --host 0.0.0.0 --port ${PORT:-8000}"]
