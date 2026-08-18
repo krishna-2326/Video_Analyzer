@@ -21,6 +21,7 @@ COPY . .
 # Environment variables
 ENV PORT=8000
 ENV WHISPER_MODEL=base
+ENV PIP_ROOT_USER_ACTION=ignore
 
 # Expose port
 EXPOSE 8000
