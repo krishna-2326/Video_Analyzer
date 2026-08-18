@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoIntel Studio — AI Media Intelligence</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        skybrand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            400: '#38bdf8',
+                            500: '#0284c7',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body class="bg-[#F8FAFC] text-slate-800 font-sans min-h-screen flex flex-col md:flex-row antialiased selection:bg-sky-500 selection:text-white">
+
+    <!-- 1. LEFT SIDEBAR CONTROL PANEL -->
+    <aside class="w-full md:w-80 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 shadow-sm">
+        <div class="p-5 space-y-6">
+            
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-400 via-sky-500 to-blue-600 flex items-center justify-center shadow-md shadow-sky-500/20 text-white">
+                    <i class="fa-solid fa-bolt text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-base font-extrabold text-slate-900 tracking-tight">VideoIntel</h1>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 border border-sky-200">Studio Edition</span>
+                </div>
+            </div>
+
+            <hr class="border-slate-100">
+
+            <!-- Input Controls Card -->
+            <div class="space-y-4">
+                <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-sky-500"></i>
+                    Media Source
+                </h2>
+
+                <!-- Source Switcher -->
+                <div class="grid grid-cols-2 p-1 bg-slate-100 rounded-xl border border-slate-200">
+                    <button id="source-yt-btn" class="source-tab active text-xs font-bold py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 bg-sky-500 text-white shadow-sm">
+                        <i class="fa-brands fa-youtube text-red-500"></i>
+                        YouTube
+                    </button>
+                    <button id="source-file-btn" class="source-tab text-xs font-bold py-2 rounded-lg text-slate-600 hover:text-slate-900 transition-all flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-cloud-arrow-up text-amber-500"></i>
+                        Upload
+                    </button>
+                </div>
+
+                <!-- YouTube Section -->
+                <div id="youtube-input-section" class="space-y-2">
+                    <label class="block text-xs font-semibold text-slate-700">YouTube Link</label>
+                    <div class="relative">
+                        <input type="url" id="youtube-url-input" placeholder="https://youtube.com/watch?v=..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 pl-9 text-xs text-slate-900 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 transition-all">
+                        <i class="fa-brands fa-youtube absolute left-3 top-3 text-slate-400 text-sm"></i>
+                    </div>
+                </div>
+
+                <!-- File Section -->
+                <div id="file-input-section" class="hidden space-y-2">
+                    <label class="block text-xs font-semibold text-slate-700">Upload Media</label>
+                    <div id="drop-zone" class="border-2 border-dashed border-slate-200 hover:border-sky-400 rounded-xl p-4 text-center cursor-pointer transition-all bg-sky-50/40 hover:bg-sky-50">
+                        <i class="fa-solid fa-cloud-arrow-up text-xl text-sky-500 mb-1"></i>
+                        <p class="text-xs text-slate-800 font-semibold">Drag & drop or click</p>
+                        <p class="text-[10px] text-slate-400">MP4, MP3, WAV, M4A</p>
+                        <input type="file" id="file-upload-input" accept="audio/*,video/*" class="hidden">
+                    </div>
+                    <div id="file-info" class="hidden text-xs text-sky-700 font-semibold bg-sky-50 border border-sky-200 rounded-xl p-2.5 flex items-center justify-between">
+                        <span id="file-name" class="truncate">filename.mp4</span>
+                        <button id="remove-file" class="text-slate-400 hover:text-red-500 text-xs">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Engine Select -->
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-semibold text-slate-700">STT Engine</label>
+                    <select id="language-select" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-sky-500">
+                        <option value="english">🇺🇸 English (Local Whisper)</option>
+                        <option value="hinglish">🇮🇳 Hinglish / Hindi (Sarvam AI)</option>
+                    </select>
+                </div>
+
+                <!-- Process CTA -->
+                <button id="process-btn" class="w-full bg-gradient-to-r from-sky-400 via-sky-500 to-blue-600 hover:from-sky-500 hover:to-blue-700 text-white font-bold py-3 rounded-xl transition-all shadow-md shadow-sky-500/20 flex items-center justify-center gap-2 text-xs uppercase tracking-wider">
+                    <i class="fa-solid fa-bolt text-amber-300"></i>
+                    <span>Process & Analyze</span>
+                </button>
+            </div>
+
+            <!-- Progress Box -->
+            <div id="progress-card" class="hidden bg-sky-50/80 border border-sky-200 rounded-xl p-4 space-y-2.5">
+                <div class="flex items-center justify-between text-xs font-bold text-sky-700">
+                    <span id="progress-status-text" class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-notch animate-spin"></i>
+                        Processing...
+                    </span>
+                    <span id="progress-percentage" class="font-mono">0%</span>
+                </div>
+                <div class="w-full bg-white rounded-full h-2 overflow-hidden border border-sky-200">
+                    <div id="progress-bar-fill" class="bg-sky-500 h-full rounded-full w-0 transition-all duration-300"></div>
+                </div>
+                <div class="grid grid-cols-4 gap-1 text-[9px] text-slate-500 text-center font-semibold">
+                    <span id="step-1-badge" class="text-sky-600">1. Extract</span>
+                    <span id="step-2-badge">2. Transcribe</span>
+                    <span id="step-3-badge">3. Summarize</span>
+                    <span id="step-4-badge">4. Vector Index</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer Info -->
+        <div class="p-5 border-t border-slate-100 text-center text-[11px] text-slate-400 space-y-1">
+            <p>VideoIntel Studio &copy; 2026</p>
+            <div class="inline-flex items-center gap-1.5 text-emerald-600 font-semibold px-2 py-0.5 rounded bg-emerald-50 border border-emerald-100">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                FastAPI Active
+            </div>
+        </div>
+    </aside>
+
+    <!-- 2. MAIN WORKSPACE STUDIO (FULL-WIDTH 2-COLUMN SPLIT STUDIO) -->
+    <div class="flex-grow flex flex-col min-w-0 overflow-hidden">
+        
+        <!-- Top Workspace Header Bar -->
+        <header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-3 truncate">
+                <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-play"></i>
+                </div>
+                <div class="truncate">
+                    <h2 id="meeting-title" class="text-sm font-bold text-slate-900 truncate">Welcome to VideoIntel Studio</h2>
+                    <p id="meeting-subtitle" class="text-[11px] text-slate-500 truncate">Process a video or audio file on the left to start analyzing.</p>
+                </div>
+            </div>
+
+            <!-- Export Actions Toolbar -->
+            <div class="flex items-center gap-2 shrink-0">
+                <button id="export-txt-btn" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors flex items-center gap-1.5 border border-slate-200">
+                    <i class="fa-solid fa-file-lines text-slate-500"></i>
+                    <span>TXT</span>
+                </button>
+                <button id="export-pdf-btn" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-600 text-white transition-colors flex items-center gap-1.5 shadow-sm shadow-sky-500/20">
+                    <i class="fa-solid fa-file-pdf text-red-100"></i>
+                    <span>PDF Export</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Split 2-Column Main Studio Area -->
+        <div class="flex-grow p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-y-auto">
+            
+            <!-- LEFT STUDIO PANEL: EXECUTIVE SUMMARY & INSIGHT CARDS (6 Cols) -->
+            <div class="lg:col-span-6 space-y-5 flex flex-col">
+                
+                <!-- Executive Summary Block -->
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex-grow">
+                    <h3 class="text-xs font-bold text-sky-700 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-align-left text-sky-500"></i>
+                        Executive Summary
+                    </h3>
+                    <div id="summary-content" class="text-xs text-slate-700 leading-relaxed whitespace-pre-line">
+                        No summary generated yet. Process a media file or YouTube link on the left sidebar to view executive bullet points.
+                    </div>
+                </div>
+
+                <!-- Sub-Insights Tabs & Accordions -->
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+                    
+                    <!-- Segmented Sub-Tabs -->
+                    <div class="flex border-b border-slate-100 gap-4 text-xs font-bold">
+                        <button class="sub-insight-tab active pb-2 text-sky-600 border-b-2 border-sky-500 flex items-center gap-1.5" data-sub="actions">
+                            <i class="fa-solid fa-circle-check text-emerald-500"></i>
+                            Practical Steps
+                        </button>
+                        <button class="sub-insight-tab pb-2 text-slate-400 hover:text-slate-700 border-b-2 border-transparent flex items-center gap-1.5" data-sub="decisions">
+                            <i class="fa-solid fa-key text-amber-500"></i>
+                            Key Decisions
+                        </button>
+                        <button class="sub-insight-tab pb-2 text-slate-400 hover:text-slate-700 border-b-2 border-transparent flex items-center gap-1.5" data-sub="questions">
+                            <i class="fa-solid fa-circle-question text-purple-500"></i>
+                            Topics & Questions
+                        </button>
+                    </div>
+
+                    <!-- Sub-Insight Content Areas -->
+                    <div id="sub-actions" class="sub-content text-xs text-slate-700 leading-relaxed whitespace-pre-line max-h-56 overflow-y-auto">
+                        Awaiting media processing...
+                    </div>
+                    <div id="sub-decisions" class="sub-content hidden text-xs text-slate-700 leading-relaxed whitespace-pre-line max-h-56 overflow-y-auto">
+                        Awaiting media processing...
+                    </div>
+                    <div id="sub-questions" class="sub-content hidden text-xs text-slate-700 leading-relaxed whitespace-pre-line max-h-56 overflow-y-auto">
+                        Awaiting media processing...
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- RIGHT STUDIO PANEL: DUAL AI CHAT & TRANSCRIPT INSPECTOR (6 Cols) -->
+            <div class="lg:col-span-6 bg-white border border-slate-200 rounded-2xl shadow-sm flex flex-col overflow-hidden min-h-[580px]">
+                
+                <!-- Dual Studio Switcher Header -->
+                <div class="p-3 border-b border-slate-200 bg-slate-50/60 flex items-center justify-between">
+                    <div class="grid grid-cols-2 p-1 bg-white rounded-xl border border-slate-200 w-64">
+                        <button id="studio-chat-tab" class="studio-tab active text-xs font-bold py-1.5 rounded-lg text-sky-600 bg-sky-50 transition-all flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-comments text-sky-500"></i>
+                            AI Chat
+                        </button>
+                        <button id="studio-transcript-tab" class="studio-tab text-xs font-bold py-1.5 rounded-lg text-slate-500 hover:text-slate-900 transition-all flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-quote-left text-sky-500"></i>
+                            Transcript
+                        </button>
+                    </div>
+
+                    <!-- Transcript Metrics (Visible in Transcript view) -->
+                    <div id="transcript-stats" class="hidden text-xs text-slate-500 items-center gap-3">
+                        <span>Words: <strong id="word-count-badge" class="text-sky-700">0</strong></span>
+                        <span>Chars: <strong id="char-count-badge" class="text-sky-700">0</strong></span>
+                    </div>
+                </div>
+
+                <!-- VIEW 1: AI RAG CHAT STREAM -->
+                <div id="studio-chat-view" class="flex-grow flex flex-col p-4 space-y-3 min-h-0">
+                    
+                    <!-- Suggestion Chips -->
+                    <div class="flex flex-wrap gap-1.5">
+                        <button class="suggestion-chip text-[11px] bg-sky-50 border border-sky-200 hover:border-sky-400 text-sky-800 px-3 py-1 rounded-full transition-all">
+                            Summarize the main topic
+                        </button>
+                        <button class="suggestion-chip text-[11px] bg-sky-50 border border-sky-200 hover:border-sky-400 text-sky-800 px-3 py-1 rounded-full transition-all">
+                            What are the key recommendations?
+                        </button>
+                    </div>
+
+                    <!-- Message Stream -->
+                    <div id="chat-messages" class="flex-grow overflow-y-auto space-y-3 p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                        <div class="chat-bubble ai bg-white border border-slate-200 text-slate-800 p-3 rounded-xl max-w-[90%] text-xs leading-relaxed shadow-sm">
+                            🤖 Hello! Process a video or audio file to start chatting with vector RAG search.
+                        </div>
+                    </div>
+
+                    <!-- Chat Input -->
+                    <div class="flex items-center gap-2 pt-1">
+                        <input type="text" id="chat-input" placeholder="Ask a question about the media transcript..." class="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 transition-all">
+                        <button id="send-chat-btn" class="bg-sky-500 hover:bg-sky-600 text-white font-bold px-4 py-2.5 rounded-xl transition-all text-xs flex items-center gap-1.5 shadow-sm shadow-sky-500/20">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>Send</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- VIEW 2: TRANSCRIPT INSPECTOR (Hidden by default) -->
+                <div id="studio-transcript-view" class="hidden flex-grow flex flex-col p-4 space-y-3 min-h-0">
+                    <div class="flex items-center justify-between gap-2">
+                        <input type="text" id="transcript-search" placeholder="Search inside transcript..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-sky-500">
+                        <button id="copy-transcript-btn" class="text-xs text-sky-700 font-bold bg-sky-50 border border-sky-200 px-3 py-2 rounded-xl transition-all flex items-center gap-1 shrink-0">
+                            <i class="fa-solid fa-copy text-sky-500"></i>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+                    <textarea id="transcript-textarea" readonly class="flex-grow w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono text-slate-800 focus:outline-none leading-relaxed resize-none shadow-inner" placeholder="Transcript text will appear here..."></textarea>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- App JS -->
+    <script src="/app.js"></script>
+</body>
+</html>

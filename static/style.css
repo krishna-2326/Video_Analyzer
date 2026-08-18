@@ -1,0 +1,53 @@
+/* 2-Column Split Studio CSS */
+
+/* Smooth Light Scrollbar */
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: #F8FAFC;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+}
+
+/* Chat bubble styling */
+.chat-bubble.user {
+    background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+    color: #ffffff;
+    margin-left: auto;
+    border-bottom-right-radius: 2px;
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.2);
+}
+
+.chat-bubble.ai {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #1e293b;
+    margin-right: auto;
+    border-bottom-left-radius: 2px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+/* Sub-insight transitions */
+.sub-content {
+    transition: opacity 0.2s ease-in-out;
+}
+
+.sub-content.hidden {
+    display: none;
+    opacity: 0;
+}
+
+.sub-content.active {
+    display: block;
+    opacity: 1;
+}

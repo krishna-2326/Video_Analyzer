@@ -1,0 +1,30 @@
+# Environment variables & API keys
+.env
+*.env
+
+# Python cache & build files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+
+# Local media downloads & vector database storage
+downloads/
+vector_db/
+*.wav
+*.mp3
+*.mp4
+*.m4a
+*.mkv
+*.avi
+
+# IDE & System files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
