@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
         stopTapeCounter();
         tapeSeconds = 0;
         if (tapeCounter) tapeCounter.classList.remove('hidden');
-        if (recDot) recDot.className = 'w-2 h-2 rounded-full bg-red-500 animate-ping';
+        if (recDot) recDot.className = 'w-2 h-2 rounded-full bg-[#CCFF00] animate-pulse';
 
         tapeTimerInterval = setInterval(() => {
             tapeSeconds++;
@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tapeTimerInterval = null;
         }
         if (tapeStatusText) tapeStatusText.textContent = finalStatus;
-        if (recDot) recDot.className = 'w-2 h-2 rounded-full bg-[#86868B]';
+        if (recDot) recDot.className = 'w-2 h-2 rounded-full bg-slate-500';
     }
 
     // --- Sub-Insight Tabs ---
@@ -100,11 +100,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const target = tab.getAttribute('data-sub');
 
             subInsightTabs.forEach(t => {
-                t.classList.remove('active', 'text-[#0071E3]', 'border-[#0071E3]');
-                t.classList.add('text-[#86868B]', 'border-transparent');
+                t.classList.remove('active', 'text-[#CCFF00]', 'border-[#CCFF00]');
+                t.classList.add('text-slate-400', 'border-transparent');
             });
-            tab.classList.add('active', 'text-[#0071E3]', 'border-[#0071E3]');
-            tab.classList.remove('text-[#86868B]', 'border-transparent');
+            tab.classList.add('active', 'text-[#CCFF00]', 'border-[#CCFF00]');
+            tab.classList.remove('text-slate-400', 'border-transparent');
 
             [subActions, subDecisions, subQuestions].forEach(el => {
                 if (el.id === `sub-${target}`) {
@@ -120,10 +120,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Studio View Switcher ---
     studioChatTab.addEventListener('click', () => {
-        studioChatTab.classList.add('active', 'text-[#0071E3]', 'bg-white', 'shadow-2xs');
-        studioChatTab.classList.remove('text-[#86868B]');
-        studioTranscriptTab.classList.remove('active', 'text-[#0071E3]', 'bg-white', 'shadow-2xs');
-        studioTranscriptTab.classList.add('text-[#86868B]');
+        studioChatTab.classList.add('active', 'text-[#CCFF00]', 'bg-white/[0.08]');
+        studioChatTab.classList.remove('text-slate-400');
+        studioTranscriptTab.classList.remove('active', 'text-[#CCFF00]', 'bg-white/[0.08]');
+        studioTranscriptTab.classList.add('text-slate-400');
 
         studioChatView.classList.remove('hidden');
         studioTranscriptView.classList.add('hidden');
@@ -131,10 +131,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     studioTranscriptTab.addEventListener('click', () => {
-        studioTranscriptTab.classList.add('active', 'text-[#0071E3]', 'bg-white', 'shadow-2xs');
-        studioTranscriptTab.classList.remove('text-[#86868B]');
-        studioChatTab.classList.remove('active', 'text-[#0071E3]', 'bg-white', 'shadow-2xs');
-        studioChatTab.classList.add('text-[#86868B]');
+        studioTranscriptTab.classList.add('active', 'text-[#CCFF00]', 'bg-white/[0.08]');
+        studioTranscriptTab.classList.remove('text-slate-400');
+        studioChatTab.classList.remove('active', 'text-[#CCFF00]', 'bg-white/[0.08]');
+        studioChatTab.classList.add('text-slate-400');
 
         studioTranscriptView.classList.remove('hidden');
         studioChatView.classList.add('hidden');
@@ -144,20 +144,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Source Switcher ---
     sourceYtBtn.addEventListener('click', () => {
         currentSourceType = 'youtube';
-        sourceYtBtn.classList.add('bg-white', 'text-[#1D1D1F]', 'shadow-sm');
-        sourceYtBtn.classList.remove('text-[#86868B]');
-        sourceFileBtn.classList.remove('bg-white', 'text-[#1D1D1F]', 'shadow-sm');
-        sourceFileBtn.classList.add('text-[#86868B]');
+        sourceYtBtn.classList.add('bg-[#CCFF00]', 'text-black', 'shadow-[0_0_15px_rgba(204,255,0,0.25)]');
+        sourceYtBtn.classList.remove('text-slate-400');
+        sourceFileBtn.classList.remove('bg-[#CCFF00]', 'text-black', 'shadow-[0_0_15px_rgba(204,255,0,0.25)]');
+        sourceFileBtn.classList.add('text-slate-400');
         ytSection.classList.remove('hidden');
         fileSection.classList.add('hidden');
     });
 
     sourceFileBtn.addEventListener('click', () => {
         currentSourceType = 'file';
-        sourceFileBtn.classList.add('bg-white', 'text-[#1D1D1F]', 'shadow-sm');
-        sourceFileBtn.classList.remove('text-[#86868B]');
-        sourceYtBtn.classList.remove('bg-white', 'text-[#1D1D1F]', 'shadow-sm');
-        sourceYtBtn.classList.add('text-[#86868B]');
+        sourceFileBtn.classList.add('bg-[#CCFF00]', 'text-black', 'shadow-[0_0_15px_rgba(204,255,0,0.25)]');
+        sourceFileBtn.classList.remove('text-slate-400');
+        sourceYtBtn.classList.remove('bg-[#CCFF00]', 'text-black', 'shadow-[0_0_15px_rgba(204,255,0,0.25)]');
+        sourceYtBtn.classList.add('text-slate-400');
         fileSection.classList.remove('hidden');
         ytSection.classList.add('hidden');
     });
@@ -167,16 +167,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     dropZone.addEventListener('dragover', (e) => {
         e.preventDefault();
-        dropZone.classList.add('border-[#0071E3]');
+        dropZone.classList.add('border-[#CCFF00]');
     });
 
     dropZone.addEventListener('dragleave', () => {
-        dropZone.classList.remove('border-[#0071E3]');
+        dropZone.classList.remove('border-[#CCFF00]');
     });
 
     dropZone.addEventListener('drop', (e) => {
         e.preventDefault();
-        dropZone.classList.remove('border-[#0071E3]');
+        dropZone.classList.remove('border-[#CCFF00]');
         if (e.dataTransfer.files.length > 0) {
             handleFileSelect(e.dataTransfer.files[0]);
         }
@@ -279,15 +279,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         [step1Badge, step2Badge, step3Badge, step4Badge].forEach((b, idx) => {
             if (idx + 1 <= stepNum) {
-                b.className = 'text-[#0071E3] font-semibold';
+                b.className = 'text-[#CCFF00] font-bold';
             } else {
-                b.className = 'text-[#86868B] font-normal';
+                b.className = 'text-slate-400 font-normal';
             }
         });
     }
 
     function renderResults(data) {
-        meetingTitle.innerHTML = `<i class="fa-solid fa-circle-play text-[#0071E3]"></i> ${data.title}`;
+        meetingTitle.innerHTML = `<i class="fa-solid fa-circle-play text-[#CCFF00]"></i> ${data.title}`;
         meetingSubtitle.textContent = 'Analysis complete. Explore summaries, key takeaways, and chat with AI.';
 
         summaryContent.textContent = data.summary;
@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Reset chat stream
         chatMessages.innerHTML = `
-            <div class="chat-bubble ai bg-[#F2F2F7] border border-black/[0.04] text-[#1D1D1F] p-3 rounded-2xl max-w-[88%] text-xs leading-relaxed">
+            <div class="chat-bubble ai bg-[#171922] border border-white/[0.08] text-slate-200 p-3 rounded-2xl max-w-[88%] text-xs leading-relaxed">
                 🤖 Indexed <strong>${data.title}</strong>! Ask any question about the content.
             </div>
         `;
@@ -329,7 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
     copyTranscriptBtn.addEventListener('click', () => {
         if (!transcriptTextarea.value) return;
         navigator.clipboard.writeText(transcriptTextarea.value);
-        copyTranscriptBtn.innerHTML = `<i class="fa-solid fa-check text-emerald-600"></i> <span>Copied</span>`;
+        copyTranscriptBtn.innerHTML = `<i class="fa-solid fa-check text-[#CCFF00]"></i> <span>Copied</span>`;
         setTimeout(() => {
             copyTranscriptBtn.innerHTML = `<i class="fa-solid fa-copy"></i> <span>Copy</span>`;
         }, 2000);
@@ -394,10 +394,10 @@ document.addEventListener('DOMContentLoaded', () => {
         div.id = msgId;
 
         if (role === 'user') {
-            div.className = 'chat-bubble user bg-[#0071E3] text-white p-3 rounded-2xl max-w-[88%] text-xs leading-relaxed ml-auto shadow-sm';
+            div.className = 'chat-bubble user bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-3 rounded-2xl max-w-[88%] text-xs leading-relaxed ml-auto shadow-md';
             div.innerHTML = `👤 <b>You:</b> ${content}`;
         } else {
-            div.className = 'chat-bubble ai bg-[#F2F2F7] border border-black/[0.04] text-[#1D1D1F] p-3 rounded-2xl max-w-[88%] text-xs leading-relaxed mr-auto';
+            div.className = 'chat-bubble ai bg-[#171922] border border-white/[0.08] text-slate-200 p-3 rounded-2xl max-w-[88%] text-xs leading-relaxed mr-auto';
             div.innerHTML = content;
         }
 
