@@ -5,8 +5,20 @@ import time
 from dotenv import load_dotenv
 from pydub import AudioSegment
 import pyperclip
+import imageio_ffmpeg
 
 load_dotenv()
+
+# Automatically configure FFmpeg executable path from imageio_ffmpeg
+try:
+    ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
+    ffmpeg_dir = os.path.dirname(ffmpeg_exe)
+    if ffmpeg_dir not in os.environ.get("PATH", ""):
+        os.environ["PATH"] = ffmpeg_dir + os.pathsep + os.environ.get("PATH", "")
+    AudioSegment.converter = ffmpeg_exe
+    AudioSegment.ffmpeg = ffmpeg_exe
+except Exception:
+    pass
 
 DOWNLOAD_DIR = 'downloads'
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
