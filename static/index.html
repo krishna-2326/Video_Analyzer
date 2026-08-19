@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VideoIntel Studio — Audio to Text Intelligence</title>
+    <title>VideoIntel Studio — Apple Design</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -12,24 +12,20 @@
             theme: {
                 extend: {
                     colors: {
-                        paper: {
-                            bg: '#F7F4EE',
+                        apple: {
+                            bg: '#F5F5F7',
                             card: '#FFFFFF',
-                            border: '#D5D1C8',
-                        },
-                        ink: {
-                            primary: '#14171C',
-                            secondary: '#5A564C',
-                            muted: '#8A8578',
-                        },
-                        record: {
-                            DEFAULT: '#C6402B',
-                            hover: '#A8321F',
+                            text: '#1D1D1F',
+                            muted: '#86868B',
+                            border: 'rgba(0, 0, 0, 0.08)',
+                            blue: '#0071E3',
+                            blueHover: '#0066CC',
+                            grayBg: '#F2F2F7',
                         }
                     },
                     fontFamily: {
-                        sans: ['Inter', '-apple-system', 'sans-serif'],
-                        mono: ['Space Mono', 'IBM Plex Mono', 'monospace'],
+                        sans: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'SF Pro Text', 'Inter', 'system-ui', 'sans-serif'],
+                        mono: ['SF Mono', 'JetBrains Mono', 'Menlo', 'monospace'],
                     }
                 }
             }
@@ -37,289 +33,287 @@
     </script>
     <!-- FontAwesome 6 Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Google Fonts: Space Mono & Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
 </head>
-<body class="bg-[#F7F4EE] text-[#14171C] font-sans min-h-screen flex flex-col md:flex-row antialiased selection:bg-[#C6402B] selection:text-white">
+<body class="bg-[#F5F5F7] text-[#1D1D1F] font-sans min-h-screen flex flex-col antialiased selection:bg-[#0071E3] selection:text-white">
 
-    <!-- 1. LEFT SIDEBAR CONTROL PANEL -->
-    <aside class="w-full md:w-80 bg-white border-r border-[#D5D1C8] flex flex-col justify-between shrink-0 shadow-sm">
-        <div class="p-5 space-y-6">
+    <!-- Apple Translucent Header Navbar -->
+    <header class="border-b border-black/[0.08] bg-white/80 backdrop-blur-2xl sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
             
-            <!-- Brand Logo & Header -->
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded bg-[#14171C] flex items-center justify-center text-white">
-                        <i class="fa-solid fa-wave-square text-xs text-[#C6402B]"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-sm font-mono font-bold text-[#14171C] tracking-tight uppercase">VideoIntel</h1>
-                        <p class="text-[10px] font-mono text-[#8A8578]">Audio to Text Studio</p>
-                    </div>
+            <!-- Apple Style Logo & Title -->
+            <div class="flex items-center gap-2.5">
+                <div class="w-7 h-7 rounded-lg bg-[#0071E3] text-white flex items-center justify-center text-xs font-semibold shadow-sm">
+                    <i class="fa-solid fa-play"></i>
                 </div>
-                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[#F7F4EE] text-[#14171C] border border-[#D5D1C8]">v2.0</span>
-            </div>
-
-            <!-- Waveform SVG Section Divider -->
-            <div class="waveform-divider">
-                <svg viewBox="0 0 300 12" class="w-full h-3 text-[#D5D1C8] fill-current opacity-70">
-                    <path d="M0,6 L10,6 L15,1 L20,11 L25,3 L30,9 L35,6 L50,6 L55,0 L60,12 L65,4 L70,8 L75,6 L90,6 L95,2 L100,10 L105,6 L120,6 L125,1 L130,11 L135,5 L140,7 L145,6 L160,6 L165,3 L170,9 L175,6 L190,6 L195,0 L200,12 L205,6 L220,6 L225,2 L230,10 L235,6 L250,6 L255,4 L260,8 L265,6 L300,6"></path>
-                </svg>
-            </div>
-
-            <!-- Media Source Inputs -->
-            <div class="space-y-4">
-                <h2 class="text-xs font-mono font-bold text-[#5A564C] uppercase tracking-wider">
-                    [ Media Source ]
-                </h2>
-
-                <!-- Source Switcher Buttons -->
-                <div class="grid grid-cols-2 p-1 bg-[#F7F4EE] rounded border border-[#D5D1C8]">
-                    <button id="source-yt-btn" class="source-tab active text-xs font-mono font-bold py-2 rounded transition-all flex items-center justify-center gap-1 bg-[#14171C] text-white">
-                        YOUTUBE
-                    </button>
-                    <button id="source-file-btn" class="source-tab text-xs font-mono font-bold py-2 rounded text-[#5A564C] hover:text-[#14171C] transition-all flex items-center justify-center gap-1">
-                        UPLOAD
-                    </button>
-                </div>
-
-                <!-- YouTube Input Field -->
-                <div id="youtube-input-section" class="space-y-2">
-                    <label class="block text-xs font-mono font-semibold text-[#5A564C]">YouTube URL</label>
-                    <input type="url" id="youtube-url-input" placeholder="https://youtube.com/watch?v=..." class="w-full bg-[#F7F4EE] border border-[#D5D1C8] rounded px-3 py-2 text-xs text-[#14171C] font-mono focus:outline-none focus:border-[#14171C] focus:ring-1 focus:ring-[#14171C] transition-all">
-                </div>
-
-                <!-- File Upload Zone -->
-                <div id="file-input-section" class="hidden space-y-2">
-                    <label class="block text-xs font-mono font-semibold text-[#5A564C]">Audio / Video File</label>
-                    <div id="drop-zone" class="border border-dashed border-[#8A8578] hover:border-[#14171C] rounded p-4 text-center cursor-pointer transition-all bg-[#F7F4EE]/50 hover:bg-[#F7F4EE]">
-                        <p class="text-xs text-[#14171C] font-semibold">Drop file or click to browse</p>
-                        <p class="text-[10px] text-[#8A8578] font-mono mt-1">MP4, MP3, WAV, M4A, MKV</p>
-                        <input type="file" id="file-upload-input" accept="audio/*,video/*" class="hidden">
-                    </div>
-                    <div id="file-info" class="hidden text-xs text-[#14171C] font-mono font-semibold bg-[#F7F4EE] border border-[#D5D1C8] rounded p-2.5 flex items-center justify-between">
-                        <span id="file-name" class="truncate">filename.mp4</span>
-                        <button id="remove-file" class="text-[#8A8578] hover:text-[#C6402B] text-xs">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- STT Engine Selector -->
-                <div class="space-y-1.5">
-                    <label class="block text-xs font-mono font-semibold text-[#5A564C]">STT Engine</label>
-                    <select id="language-select" class="w-full bg-[#F7F4EE] border border-[#D5D1C8] rounded px-3 py-2 text-xs font-mono text-[#14171C] focus:outline-none focus:border-[#14171C]">
-                        <option value="english">English (Local Whisper)</option>
-                        <option value="hinglish">Hinglish / Hindi (Sarvam AI)</option>
-                    </select>
-                </div>
-
-                <!-- Primary Process Action Button -->
-                <button id="process-btn" class="w-full bg-[#C6402B] hover:bg-[#A8321F] text-white font-mono font-bold py-3 rounded transition-all shadow-sm flex items-center justify-center gap-2 text-xs uppercase tracking-wider focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C6402B]">
-                    <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-                    <span>Process & Transcribe</span>
-                </button>
-            </div>
-
-            <!-- Waveform SVG Divider -->
-            <div class="waveform-divider">
-                <svg viewBox="0 0 300 12" class="w-full h-3 text-[#D5D1C8] fill-current opacity-70">
-                    <path d="M0,6 L10,6 L15,1 L20,11 L25,3 L30,9 L35,6 L50,6 L55,0 L60,12 L65,4 L70,8 L75,6 L90,6 L95,2 L100,10 L105,6 L120,6 L125,1 L130,11 L135,5 L140,7 L145,6 L160,6 L165,3 L170,9 L175,6 L190,6 L195,0 L200,12 L205,6 L220,6 L225,2 L230,10 L235,6 L250,6 L255,4 L260,8 L265,6 L300,6"></path>
-                </svg>
-            </div>
-
-            <!-- Live Progress Card -->
-            <div id="progress-card" class="hidden bg-[#F7F4EE] border border-[#D5D1C8] rounded p-4 space-y-2.5">
-                <div class="flex items-center justify-between text-xs font-mono font-bold text-[#14171C]">
-                    <span id="progress-status-text" class="flex items-center gap-1.5">
-                        Transcribing...
-                    </span>
-                    <span id="progress-percentage" class="font-mono text-[#C6402B]">0%</span>
-                </div>
-                <div class="w-full bg-white rounded-none h-1.5 overflow-hidden border border-[#D5D1C8]">
-                    <div id="progress-bar-fill" class="bg-[#C6402B] h-full w-0 transition-all duration-300"></div>
-                </div>
-                <div class="grid grid-cols-4 gap-1 text-[9px] font-mono text-[#8A8578] text-center font-semibold">
-                    <span id="step-1-badge" class="text-[#14171C]">1. Extract</span>
-                    <span id="step-2-badge">2. Transcribe</span>
-                    <span id="step-3-badge">3. Summarize</span>
-                    <span id="step-4-badge">4. Vector Index</span>
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-semibold tracking-tight text-[#1D1D1F]">VideoIntel Studio</span>
+                    <span class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#F2F2F7] text-[#86868B] border border-black/[0.06]">Pro</span>
                 </div>
             </div>
 
-        </div>
+            <!-- Tape Counter & Server Status -->
+            <div class="flex items-center gap-4">
+                <!-- Apple Live Status Readout -->
+                <div id="tape-counter" class="flex items-center gap-2.5 bg-[#F2F2F7] border border-black/[0.06] px-3 py-1 rounded-full text-xs text-[#1D1D1F] font-mono shadow-2xs">
+                    <span id="rec-dot" class="w-2 h-2 rounded-full bg-[#86868B]"></span>
+                    <span id="tape-time-display" class="font-semibold text-[#1D1D1F]">00:00:00</span>
+                    <span class="text-[#86868B]">|</span>
+                    <span id="tape-status-text" class="text-[10px] font-sans uppercase font-medium text-[#86868B]">Ready</span>
+                </div>
 
-        <!-- Footer Server Status -->
-        <div class="p-4 border-t border-[#D5D1C8] text-center text-[11px] font-mono text-[#8A8578] space-y-1">
-            <div class="inline-flex items-center gap-1.5 text-[#14171C] font-mono font-bold px-2 py-0.5 rounded bg-[#F7F4EE] border border-[#D5D1C8]">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                FastAPI Server Active
+                <div class="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-2xs">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span>FastAPI Server Active</span>
+                </div>
             </div>
         </div>
-    </aside>
+    </header>
 
-    <!-- 2. MAIN WORKSPACE STUDIO (2-COLUMN SPLIT STUDIO) -->
-    <div class="flex-grow flex flex-col min-w-0 overflow-hidden">
-        
-        <!-- Signature Header: Tape Counter Readout -->
-        <header class="h-16 bg-white border-b border-[#D5D1C8] px-6 flex items-center justify-between shrink-0">
-            <!-- Media Title Banner -->
-            <div class="flex items-center gap-3 truncate">
-                <div class="w-8 h-8 rounded bg-[#F7F4EE] border border-[#D5D1C8] text-[#14171C] flex items-center justify-center text-xs font-mono">
-                    REC
-                </div>
-                <div class="truncate">
-                    <h2 id="meeting-title" class="text-sm font-mono font-bold text-[#14171C] truncate">VideoIntel Studio</h2>
-                    <p id="meeting-subtitle" class="text-[11px] font-mono text-[#8A8578] truncate">Paste a YouTube link or upload a file to begin.</p>
-                </div>
-            </div>
-
-            <!-- Signature Element: Live Tape-Counter Readout -->
-            <div id="tape-counter" class="hidden sm:flex items-center gap-3 bg-[#14171C] text-white font-mono px-3.5 py-1.5 rounded border border-[#334155] shadow-sm">
-                <div class="flex items-center gap-1.5">
-                    <span id="rec-dot" class="w-2 h-2 rounded-full bg-[#C6402B]"></span>
-                    <span class="text-[10px] text-[#8A8578] tracking-widest uppercase">REC</span>
-                </div>
-                <span class="text-slate-600 font-mono">|</span>
-                <span id="tape-time-display" class="text-xs font-mono tracking-widest font-bold text-white">00:00:00</span>
-                <span class="text-slate-600 font-mono">|</span>
-                <span id="tape-status-text" class="text-[10px] font-mono uppercase text-slate-300">READY</span>
-            </div>
-
-            <!-- Export Actions Toolbar -->
-            <div class="flex items-center gap-2 shrink-0">
-                <button id="export-txt-btn" class="text-xs font-mono font-bold px-3 py-1.5 rounded bg-[#F7F4EE] hover:bg-[#EFEBE4] text-[#14171C] transition-colors border border-[#D5D1C8]">
-                    [ EXPORT TXT ]
-                </button>
-                <button id="export-pdf-btn" class="text-xs font-mono font-bold px-3 py-1.5 rounded bg-[#14171C] hover:bg-[#2A2E35] text-white transition-colors border border-[#14171C]">
-                    [ EXPORT PDF ]
-                </button>
-            </div>
-        </header>
-
-        <!-- Split 2-Column Main Studio Area -->
-        <div class="flex-grow p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-y-auto">
+    <!-- Main Apple Studio Workspace -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            <!-- LEFT STUDIO PANEL: EXECUTIVE SUMMARY & INSIGHT CARDS (6 Cols) -->
-            <div class="lg:col-span-6 space-y-5 flex flex-col">
+            <!-- Left Panel: Input & Settings Sidebar (4 Cols) -->
+            <div class="lg:col-span-4 space-y-6">
                 
-                <!-- Executive Summary Block -->
-                <div class="bg-white border border-[#D5D1C8] rounded p-5 flex-grow">
-                    <h3 class="text-xs font-mono font-bold text-[#14171C] uppercase tracking-wider mb-3 flex items-center gap-2">
-                        [ Executive Summary ]
-                    </h3>
+                <!-- Input Card -->
+                <div class="bg-white border border-black/[0.08] rounded-2xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.04)] space-y-5">
                     
-                    <!-- Waveform SVG Divider -->
-                    <div class="waveform-divider mb-3">
-                        <svg viewBox="0 0 300 12" class="w-full h-3 text-[#D5D1C8] fill-current opacity-70">
-                            <path d="M0,6 L10,6 L15,1 L20,11 L25,3 L30,9 L35,6 L50,6 L55,0 L60,12 L65,4 L70,8 L75,6 L90,6 L95,2 L100,10 L105,6 L120,6 L125,1 L130,11 L135,5 L140,7 L145,6 L160,6 L165,3 L170,9 L175,6 L190,6 L195,0 L200,12 L205,6 L220,6 L225,2 L230,10 L235,6 L250,6 L255,4 L260,8 L265,6 L300,6"></path>
-                        </svg>
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xs font-semibold text-[#86868B] uppercase tracking-wider">
+                            Media Source
+                        </h2>
                     </div>
 
-                    <div id="summary-content" class="text-xs text-[#5A564C] leading-relaxed whitespace-pre-line font-sans">
-                        No summary yet — paste a link or upload a file to begin.
-                    </div>
-                </div>
-
-                <!-- Sub-Insights Tabs & Accordions -->
-                <div class="bg-white border border-[#D5D1C8] rounded p-5 space-y-4">
-                    
-                    <!-- Segmented Sub-Tabs -->
-                    <div class="flex border-b border-[#D5D1C8] gap-4 text-xs font-mono font-bold">
-                        <button class="sub-insight-tab active pb-2 text-[#14171C] border-b-2 border-[#C6402B] flex items-center gap-1.5" data-sub="actions">
-                            Practical Steps
+                    <!-- Apple Segmented Pill Switcher -->
+                    <div class="grid grid-cols-2 p-1 bg-[#F2F2F7] rounded-xl border border-black/[0.04]">
+                        <button id="source-yt-btn" class="source-tab active text-xs font-medium py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 bg-white text-[#1D1D1F] shadow-sm">
+                            <i class="fa-brands fa-youtube text-red-500"></i>
+                            YouTube Link
                         </button>
-                        <button class="sub-insight-tab pb-2 text-[#8A8578] hover:text-[#14171C] border-b-2 border-transparent flex items-center gap-1.5" data-sub="decisions">
-                            Key Decisions
-                        </button>
-                        <button class="sub-insight-tab pb-2 text-[#8A8578] hover:text-[#14171C] border-b-2 border-transparent flex items-center gap-1.5" data-sub="questions">
-                            Topics & Questions
+                        <button id="source-file-btn" class="source-tab text-xs font-medium py-2 rounded-lg text-[#86868B] hover:text-[#1D1D1F] transition-all flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-cloud-arrow-up text-blue-500"></i>
+                            File Upload
                         </button>
                     </div>
 
-                    <!-- Sub-Insight Content Areas -->
-                    <div id="sub-actions" class="sub-content text-xs text-[#5A564C] leading-relaxed whitespace-pre-line max-h-56 overflow-y-auto font-sans">
-                        No practical steps extracted yet.
-                    </div>
-                    <div id="sub-decisions" class="sub-content hidden text-xs text-[#5A564C] leading-relaxed whitespace-pre-line max-h-56 overflow-y-auto font-sans">
-                        No key decisions extracted yet.
-                    </div>
-                    <div id="sub-questions" class="sub-content hidden text-xs text-[#5A564C] leading-relaxed whitespace-pre-line max-h-56 overflow-y-auto font-sans">
-                        No topics or questions extracted yet.
+                    <!-- YouTube Input View -->
+                    <div id="youtube-input-section" class="space-y-2">
+                        <label class="block text-xs font-medium text-[#1D1D1F]">YouTube URL</label>
+                        <input type="url" id="youtube-url-input" placeholder="https://www.youtube.com/watch?v=..." class="w-full bg-[#F2F2F7] border border-black/[0.06] rounded-xl px-3.5 py-2.5 text-xs text-[#1D1D1F] placeholder-[#86868B] focus:outline-none focus:bg-white focus:border-[#0071E3] focus:ring-4 focus:ring-[#0071E3]/10 transition-all">
                     </div>
 
-                </div>
-
-            </div>
-
-            <!-- RIGHT STUDIO PANEL: DUAL AI CHAT & TRANSCRIPT INSPECTOR (6 Cols) -->
-            <div class="lg:col-span-6 bg-white border border-[#D5D1C8] rounded flex flex-col overflow-hidden min-h-[580px]">
-                
-                <!-- Dual Studio Switcher Header -->
-                <div class="p-3 border-b border-[#D5D1C8] bg-[#F7F4EE] flex items-center justify-between">
-                    <div class="grid grid-cols-2 p-1 bg-white rounded border border-[#D5D1C8] w-64">
-                        <button id="studio-chat-tab" class="studio-tab active text-xs font-mono font-bold py-1.5 rounded text-[#14171C] bg-[#F7F4EE] transition-all flex items-center justify-center gap-1">
-                            Ask Assistant
-                        </button>
-                        <button id="studio-transcript-tab" class="studio-tab text-xs font-mono font-bold py-1.5 rounded text-[#8A8578] hover:text-[#14171C] transition-all flex items-center justify-center gap-1">
-                            Full Transcript
-                        </button>
-                    </div>
-
-                    <!-- Transcript Metrics (Visible in Transcript view) -->
-                    <div id="transcript-stats" class="hidden text-xs font-mono text-[#8A8578] items-center gap-3">
-                        <span>Words: <strong id="word-count-badge" class="text-[#14171C]">0</strong></span>
-                        <span>Chars: <strong id="char-count-badge" class="text-[#14171C]">0</strong></span>
-                    </div>
-                </div>
-
-                <!-- VIEW 1: AI RAG CHAT STREAM -->
-                <div id="studio-chat-view" class="flex-grow flex flex-col p-4 space-y-3 min-h-0">
-                    
-                    <!-- Suggestion Chips -->
-                    <div class="flex flex-wrap gap-1.5">
-                        <button class="suggestion-chip text-[11px] font-mono bg-[#F7F4EE] border border-[#D5D1C8] hover:border-[#14171C] text-[#14171C] px-3 py-1 rounded transition-all">
-                            Summarize main recommendations
-                        </button>
-                        <button class="suggestion-chip text-[11px] font-mono bg-[#F7F4EE] border border-[#D5D1C8] hover:border-[#14171C] text-[#14171C] px-3 py-1 rounded transition-all">
-                            Explain key conclusions
-                        </button>
-                    </div>
-
-                    <!-- Message Stream -->
-                    <div id="chat-messages" class="flex-grow overflow-y-auto space-y-3 p-3 bg-[#F7F4EE]/60 border border-[#D5D1C8] rounded">
-                        <div class="chat-bubble ai bg-white border border-[#D5D1C8] text-[#14171C] p-3 rounded max-w-[90%] text-xs leading-relaxed font-sans">
-                            <span class="font-mono text-[10px] font-bold text-[#8A8578] block mb-1">AI:</span>
-                            Ask any question about this transcript once media is processed.
+                    <!-- File Upload View -->
+                    <div id="file-input-section" class="hidden space-y-2">
+                        <label class="block text-xs font-medium text-[#1D1D1F]">Media File</label>
+                        <div id="drop-zone" class="border-2 border-dashed border-[#86868B]/30 hover:border-[#0071E3] rounded-xl p-6 text-center cursor-pointer transition-all bg-[#F2F2F7]/50 hover:bg-[#F2F2F7]">
+                            <i class="fa-solid fa-cloud-arrow-up text-2xl text-[#0071E3] mb-2"></i>
+                            <p class="text-xs text-[#1D1D1F] font-semibold">Click or drag media file here</p>
+                            <p class="text-[11px] text-[#86868B] mt-1">MP4, MP3, WAV, M4A, MKV</p>
+                            <input type="file" id="file-upload-input" accept="audio/*,video/*" class="hidden">
+                        </div>
+                        <div id="file-info" class="hidden text-xs text-[#0071E3] font-medium bg-[#0071E3]/5 border border-[#0071E3]/20 rounded-xl p-3 flex items-center justify-between">
+                            <span id="file-name" class="truncate font-mono">filename.mp4</span>
+                            <button id="remove-file" class="text-[#86868B] hover:text-red-500 text-xs">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Chat Input -->
-                    <div class="flex items-center gap-2 pt-1">
-                        <input type="text" id="chat-input" placeholder="Ask about this transcript..." class="flex-grow bg-[#F7F4EE] border border-[#D5D1C8] rounded px-4 py-2.5 text-xs text-[#14171C] placeholder-[#8A8578] focus:outline-none focus:border-[#14171C] focus:ring-1 focus:ring-[#14171C] transition-all font-sans">
-                        <button id="send-chat-btn" class="bg-[#14171C] hover:bg-[#2A2E35] text-white font-mono font-bold px-4 py-2.5 rounded transition-all text-xs flex items-center gap-1.5">
-                            [ ASK ]
-                        </button>
+                    <!-- Engine Selector -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-medium text-[#1D1D1F]">Transcription Engine</label>
+                        <select id="language-select" class="w-full bg-[#F2F2F7] border border-black/[0.06] rounded-xl px-3.5 py-2.5 text-xs text-[#1D1D1F] focus:outline-none focus:border-[#0071E3]">
+                            <option value="english">English — OpenAI Whisper (Local STT)</option>
+                            <option value="hinglish">Hinglish / Hindi — Sarvam AI (Cloud STT)</option>
+                        </select>
+                    </div>
+
+                    <!-- Apple Primary Blue Action Button -->
+                    <button id="process-btn" class="w-full bg-[#0071E3] hover:bg-[#0066CC] text-white font-medium py-3 rounded-xl transition-all shadow-md shadow-[#0071E3]/20 flex items-center justify-center gap-2 text-xs">
+                        <i class="fa-solid fa-bolt text-amber-300"></i>
+                        <span>Process & Transcribe</span>
+                    </button>
+                </div>
+
+                <!-- Progress Indicator Card -->
+                <div id="progress-card" class="hidden bg-white border border-black/[0.08] rounded-2xl p-5 space-y-3 shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
+                    <div class="flex items-center justify-between text-xs font-semibold text-[#0071E3]">
+                        <span id="progress-status-text" class="flex items-center gap-2">
+                            <i class="fa-solid fa-circle-notch animate-spin"></i>
+                            Processing media...
+                        </span>
+                        <span id="progress-percentage" class="text-[#86868B] font-mono">0%</span>
+                    </div>
+
+                    <div class="w-full bg-[#F2F2F7] rounded-full h-2 overflow-hidden border border-black/[0.04]">
+                        <div id="progress-bar-fill" class="bg-[#0071E3] h-full rounded-full w-0 transition-all duration-300"></div>
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-1 text-[10px] text-[#86868B] text-center font-medium pt-1">
+                        <span id="step-1-badge" class="text-[#0071E3] font-semibold">1. Extract</span>
+                        <span id="step-2-badge">2. Transcribe</span>
+                        <span id="step-3-badge">3. Summarize</span>
+                        <span id="step-4-badge">4. Vector RAG</span>
                     </div>
                 </div>
 
-                <!-- VIEW 2: TRANSCRIPT INSPECTOR (Hidden by default) -->
-                <div id="studio-transcript-view" class="hidden flex-grow flex flex-col p-4 space-y-3 min-h-0">
-                    <div class="flex items-center justify-between gap-2">
-                        <input type="text" id="transcript-search" placeholder="Search transcript..." class="w-full bg-[#F7F4EE] border border-[#D5D1C8] rounded px-3 py-2 text-xs font-mono text-[#14171C] focus:outline-none focus:border-[#14171C]">
-                        <button id="copy-transcript-btn" class="text-xs font-mono font-bold text-[#14171C] bg-[#F7F4EE] border border-[#D5D1C8] px-3 py-2 rounded transition-all flex items-center gap-1 shrink-0 hover:bg-white">
-                            [ COPY ]
-                        </button>
+            </div>
+
+            <!-- Right Panel: Output Workspace Studio (8 Cols) -->
+            <div class="lg:col-span-8 flex flex-col space-y-6">
+                
+                <!-- Main Content Container -->
+                <div class="bg-white border border-black/[0.08] rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] min-h-[620px] flex flex-col overflow-hidden">
+                    
+                    <!-- Header Banner & Action Bar -->
+                    <div class="p-6 border-b border-black/[0.06] bg-gradient-to-b from-[#F2F2F7]/50 to-white flex items-center justify-between">
+                        <div>
+                            <h2 id="meeting-title" class="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
+                                <i class="fa-solid fa-circle-play text-[#0071E3]"></i>
+                                <span>Media Analysis Dashboard</span>
+                            </h2>
+                            <p id="meeting-subtitle" class="text-xs text-[#86868B] mt-0.5">Select a video URL or upload a file on the left to begin.</p>
+                        </div>
+
+                        <!-- Export Buttons Toolbar -->
+                        <div class="flex items-center gap-2 shrink-0">
+                            <button id="export-txt-btn" class="text-xs font-medium px-3.5 py-2 rounded-xl bg-[#F2F2F7] hover:bg-[#E5E5EA] text-[#1D1D1F] transition-all border border-black/[0.04] flex items-center gap-1.5">
+                                <i class="fa-solid fa-file-lines text-[#86868B]"></i>
+                                <span>TXT</span>
+                            </button>
+                            <button id="export-pdf-btn" class="text-xs font-medium px-3.5 py-2 rounded-xl bg-[#0071E3] hover:bg-[#0066CC] text-white transition-all shadow-sm shadow-[#0071E3]/20 flex items-center gap-1.5">
+                                <i class="fa-solid fa-file-pdf text-red-200"></i>
+                                <span>Export PDF</span>
+                            </button>
+                        </div>
                     </div>
-                    <textarea id="transcript-textarea" readonly class="flex-grow w-full bg-[#F7F4EE] border border-[#D5D1C8] rounded p-3 text-xs font-mono text-[#14171C] focus:outline-none leading-relaxed resize-none" placeholder="Transcript text will appear here once media is processed..."></textarea>
+
+                    <!-- Split Studio Stage -->
+                    <div class="p-6 flex-grow grid grid-cols-1 md:grid-cols-12 gap-6">
+                        
+                        <!-- Left Studio Col: Summary & Insights (6 Cols) -->
+                        <div class="md:col-span-6 space-y-5 flex flex-col">
+                            
+                            <!-- Executive Summary Card -->
+                            <div class="bg-[#F2F2F7]/50 border border-black/[0.04] rounded-xl p-5 flex-grow">
+                                <h3 class="text-xs font-semibold text-[#0071E3] uppercase tracking-wider mb-3 flex items-center gap-2">
+                                    <i class="fa-solid fa-align-left"></i>
+                                    Executive Summary
+                                </h3>
+                                <div id="summary-content" class="text-xs text-[#1D1D1F] leading-relaxed whitespace-pre-line">
+                                    No summary generated yet. Select a video or upload a file on the left sidebar to view structured executive insights.
+                                </div>
+                            </div>
+
+                            <!-- Sub-Insights Tabs -->
+                            <div class="bg-white border border-black/[0.06] rounded-xl p-4 space-y-3 shadow-2xs">
+                                
+                                <div class="flex border-b border-black/[0.06] gap-3 text-xs font-medium">
+                                    <button class="sub-insight-tab active pb-2 text-[#0071E3] border-b-2 border-[#0071E3] flex items-center gap-1.5" data-sub="actions">
+                                        Practical Steps
+                                    </button>
+                                    <button class="sub-insight-tab pb-2 text-[#86868B] hover:text-[#1D1D1F] border-b-2 border-transparent flex items-center gap-1.5" data-sub="decisions">
+                                        Key Decisions
+                                    </button>
+                                    <button class="sub-insight-tab pb-2 text-[#86868B] hover:text-[#1D1D1F] border-b-2 border-transparent flex items-center gap-1.5" data-sub="questions">
+                                        Topics & Questions
+                                    </button>
+                                </div>
+
+                                <div id="sub-actions" class="sub-content text-xs text-[#1D1D1F] leading-relaxed whitespace-pre-line max-h-52 overflow-y-auto">
+                                    Awaiting media processing...
+                                </div>
+                                <div id="sub-decisions" class="sub-content hidden text-xs text-[#1D1D1F] leading-relaxed whitespace-pre-line max-h-52 overflow-y-auto">
+                                    Awaiting media processing...
+                                </div>
+                                <div id="sub-questions" class="sub-content hidden text-xs text-[#1D1D1F] leading-relaxed whitespace-pre-line max-h-52 overflow-y-auto">
+                                    Awaiting media processing...
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Right Studio Col: Dual AI Chat & Transcript (6 Cols) -->
+                        <div class="md:col-span-6 bg-[#F2F2F7]/50 border border-black/[0.06] rounded-xl flex flex-col overflow-hidden min-h-[520px]">
+                            
+                            <!-- Studio View Switcher Header -->
+                            <div class="p-3 border-b border-black/[0.06] bg-white flex items-center justify-between">
+                                <div class="grid grid-cols-2 p-1 bg-[#F2F2F7] rounded-lg border border-black/[0.04] w-60">
+                                    <button id="studio-chat-tab" class="studio-tab active text-xs font-medium py-1.5 rounded-md text-[#0071E3] bg-white shadow-2xs transition-all flex items-center justify-center gap-1.5">
+                                        <i class="fa-solid fa-comments"></i>
+                                        AI Chat
+                                    </button>
+                                    <button id="studio-transcript-tab" class="studio-tab text-xs font-medium py-1.5 rounded-md text-[#86868B] hover:text-[#1D1D1F] transition-all flex items-center justify-center gap-1.5">
+                                        <i class="fa-solid fa-quote-left"></i>
+                                        Transcript
+                                    </button>
+                                </div>
+
+                                <div id="transcript-stats" class="hidden text-xs text-[#86868B] font-mono items-center gap-2">
+                                    <span>Words: <strong id="word-count-badge" class="text-[#1D1D1F]">0</strong></span>
+                                </div>
+                            </div>
+
+                            <!-- VIEW 1: AI CHAT STREAM -->
+                            <div id="studio-chat-view" class="flex-grow flex flex-col p-4 space-y-3 min-h-0">
+                                
+                                <!-- Suggestion Chips -->
+                                <div class="flex flex-wrap gap-1.5">
+                                    <button class="suggestion-chip text-xs bg-white border border-black/[0.06] hover:border-[#0071E3] text-[#1D1D1F] px-3 py-1 rounded-full transition-all shadow-2xs">
+                                        Summarize the main topic
+                                    </button>
+                                    <button class="suggestion-chip text-xs bg-white border border-black/[0.06] hover:border-[#0071E3] text-[#1D1D1F] px-3 py-1 rounded-full transition-all shadow-2xs">
+                                        What are the recommendations?
+                                    </button>
+                                </div>
+
+                                <!-- Chat Message Bubbles -->
+                                <div id="chat-messages" class="flex-grow overflow-y-auto space-y-3 p-3 bg-white border border-black/[0.04] rounded-xl shadow-inner">
+                                    <div class="chat-bubble ai bg-[#F2F2F7] border border-black/[0.04] text-[#1D1D1F] p-3 rounded-2xl max-w-[88%] text-xs leading-relaxed">
+                                        🤖 Hello! Process media to begin chatting with vector RAG search.
+                                    </div>
+                                </div>
+
+                                <!-- Chat Input Bar -->
+                                <div class="flex items-center gap-2">
+                                    <input type="text" id="chat-input" placeholder="Ask any question about this media transcript..." class="flex-grow bg-white border border-black/[0.08] rounded-xl px-4 py-2.5 text-xs text-[#1D1D1F] placeholder-[#86868B] focus:outline-none focus:border-[#0071E3] focus:ring-4 focus:ring-[#0071E3]/10 transition-all">
+                                    <button id="send-chat-btn" class="bg-[#0071E3] hover:bg-[#0066CC] text-white font-medium px-4 py-2.5 rounded-xl transition-all text-xs flex items-center gap-1.5 shadow-sm shadow-[#0071E3]/20">
+                                        <i class="fa-solid fa-paper-plane"></i>
+                                        <span>Send</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- VIEW 2: TRANSCRIPT INSPECTOR -->
+                            <div id="studio-transcript-view" class="hidden flex-grow flex flex-col p-4 space-y-3 min-h-0">
+                                <div class="flex items-center justify-between gap-2">
+                                    <input type="text" id="transcript-search" placeholder="Search inside transcript..." class="w-full bg-white border border-black/[0.08] rounded-xl px-3.5 py-2 text-xs text-[#1D1D1F] focus:outline-none focus:border-[#0071E3]">
+                                    <button id="copy-transcript-btn" class="text-xs font-medium text-[#0071E3] bg-white border border-[#0071E3]/30 px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 shrink-0 hover:bg-[#0071E3]/5">
+                                        <i class="fa-solid fa-copy"></i>
+                                        <span>Copy</span>
+                                    </button>
+                                </div>
+                                <textarea id="transcript-textarea" readonly class="flex-grow w-full bg-white border border-black/[0.08] rounded-xl p-3.5 text-xs font-mono text-[#1D1D1F] focus:outline-none leading-relaxed resize-none shadow-inner" placeholder="Transcript text will appear here..."></textarea>
+                            </div>
+
+                        </div>
+
+                    </div>
+
                 </div>
 
             </div>
 
         </div>
+    </main>
 
-    </div>
+    <!-- Apple Style Footer -->
+    <footer class="border-t border-black/[0.06] py-4 text-center text-xs text-[#86868B] bg-white">
+        VideoIntel Studio &copy; 2026 — Powered by FastAPI, OpenAI Whisper, Mistral AI & Chroma Vector DB
+    </footer>
 
     <!-- App JS -->
     <script src="/app.js"></script>
