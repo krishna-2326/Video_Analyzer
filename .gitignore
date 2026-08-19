@@ -1,6 +1,8 @@
 # Environment variables & API keys
 .env
 *.env
+cookies.txt
+*.cookies
 
 # Python cache & build files
 __pycache__/
