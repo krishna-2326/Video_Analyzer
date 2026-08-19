@@ -4,7 +4,6 @@ import shutil
 import time
 from dotenv import load_dotenv
 from pydub import AudioSegment
-import pyperclip
 import imageio_ffmpeg
 
 load_dotenv()
@@ -183,37 +182,3 @@ def _looks_like_youtube_url(text: str) -> bool:
     return text.startswith(("http://", "https://")) and (
         "youtube.com" in text or "youtu.be" in text
     )
-
-
-def watch_clipboard(poll_interval: float = 1.0) -> None:
-    """
-    Polls the clipboard. Whenever a NEW value is copied that looks like a
-    YouTube link, automatically runs process_input on it -- no manual
-    running of the script or pressing enter needed.
-    """
-    print("Watching clipboard for YouTube links... (Ctrl+C to stop)")
-    last_seen = None
-
-    while True:
-        try:
-            current = pyperclip.paste()
-        except Exception as exc:
-            print(f"Clipboard read failed: {exc}")
-            time.sleep(poll_interval)
-            continue
-
-        if current != last_seen:
-            last_seen = current
-            if _looks_like_youtube_url(current):
-                print(f"\nDetected YouTube link: {current}")
-                try:
-                    process_input(current.strip())
-                except Exception as exc:
-                    print(f"Failed to process link: {exc}")
-                print("Watching clipboard for YouTube links... (Ctrl+C to stop)")
-
-        time.sleep(poll_interval)
-
-
-if __name__ == "__main__":
-    watch_clipboard()
