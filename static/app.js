@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentSourceType = 'youtube';
     let selectedFile = null;
     let currentResults = null;
+    let tapeTimerInterval = null;
+    let tapeSeconds = 0;
 
     // DOM Elements
     const sourceYtBtn = document.getElementById('source-yt-btn');
@@ -19,11 +21,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const languageSelect = document.getElementById('language-select');
     const processBtn = document.getElementById('process-btn');
 
-    // Progress Elements
+    // Progress & Tape Counter Elements
     const progressCard = document.getElementById('progress-card');
     const progressStatusText = document.getElementById('progress-status-text');
     const progressBarFill = document.getElementById('progress-bar-fill');
     const progressPercentage = document.getElementById('progress-percentage');
+
+    const tapeCounter = document.getElementById('tape-counter');
+    const tapeTimeDisplay = document.getElementById('tape-time-display');
+    const tapeStatusText = document.getElementById('tape-status-text');
+    const recDot = document.getElementById('rec-dot');
 
     const step1Badge = document.getElementById('step-1-badge');
     const step2Badge = document.getElementById('step-2-badge');
@@ -62,6 +69,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const exportTxtBtn = document.getElementById('export-txt-btn');
     const exportPdfBtn = document.getElementById('export-pdf-btn');
 
+    // --- Tape Counter Timer Utility ---
+    function startTapeCounter() {
+        stopTapeCounter();
+        tapeSeconds = 0;
+        if (tapeCounter) tapeCounter.classList.remove('hidden');
+        if (recDot) recDot.className = 'w-2 h-2 rounded-full bg-[#C6402B] animate-pulse';
+
+        tapeTimerInterval = setInterval(() => {
+            tapeSeconds++;
+            const hrs = String(Math.floor(tapeSeconds / 3600)).padStart(2, '0');
+            const mins = String(Math.floor((tapeSeconds % 3600) / 60)).padStart(2, '0');
+            const secs = String(tapeSeconds % 60).padStart(2, '0');
+            if (tapeTimeDisplay) tapeTimeDisplay.textContent = `${hrs}:${mins}:${secs}`;
+        }, 1000);
+    }
+
+    function stopTapeCounter(finalStatus = 'READY') {
+        if (tapeTimerInterval) {
+            clearInterval(tapeTimerInterval);
+            tapeTimerInterval = null;
+        }
+        if (tapeStatusText) tapeStatusText.textContent = finalStatus;
+        if (recDot) recDot.className = 'w-2 h-2 rounded-full bg-[#8A8578]';
+    }
+
     // --- Sub-Insight Tabs ---
     const subInsightTabs = document.querySelectorAll('.sub-insight-tab');
     subInsightTabs.forEach(tab => {
@@ -69,11 +101,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const target = tab.getAttribute('data-sub');
 
             subInsightTabs.forEach(t => {
-                t.classList.remove('active', 'text-sky-600', 'border-sky-500');
-                t.classList.add('text-slate-400', 'border-transparent');
+                t.classList.remove('active', 'text-[#14171C]', 'border-[#C6402B]');
+                t.classList.add('text-[#8A8578]', 'border-transparent');
             });
-            tab.classList.add('active', 'text-sky-600', 'border-sky-500');
-            tab.classList.remove('text-slate-400', 'border-transparent');
+            tab.classList.add('active', 'text-[#14171C]', 'border-[#C6402B]');
+            tab.classList.remove('text-[#8A8578]', 'border-transparent');
 
             [subActions, subDecisions, subQuestions].forEach(el => {
                 if (el.id === `sub-${target}`) {
@@ -89,10 +121,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Studio View Switcher ---
     studioChatTab.addEventListener('click', () => {
-        studioChatTab.classList.add('active', 'text-sky-600', 'bg-sky-50');
-        studioChatTab.classList.remove('text-slate-500');
-        studioTranscriptTab.classList.remove('active', 'text-sky-600', 'bg-sky-50');
-        studioTranscriptTab.classList.add('text-slate-500');
+        studioChatTab.classList.add('active', 'text-[#14171C]', 'bg-[#F7F4EE]');
+        studioChatTab.classList.remove('text-[#8A8578]');
+        studioTranscriptTab.classList.remove('active', 'text-[#14171C]', 'bg-[#F7F4EE]');
+        studioTranscriptTab.classList.add('text-[#8A8578]');
 
         studioChatView.classList.remove('hidden');
         studioTranscriptView.classList.add('hidden');
@@ -100,10 +132,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     studioTranscriptTab.addEventListener('click', () => {
-        studioTranscriptTab.classList.add('active', 'text-sky-600', 'bg-sky-50');
-        studioTranscriptTab.classList.remove('text-slate-500');
-        studioChatTab.classList.remove('active', 'text-sky-600', 'bg-sky-50');
-        studioChatTab.classList.add('text-slate-500');
+        studioTranscriptTab.classList.add('active', 'text-[#14171C]', 'bg-[#F7F4EE]');
+        studioTranscriptTab.classList.remove('text-[#8A8578]');
+        studioChatTab.classList.remove('active', 'text-[#14171C]', 'bg-[#F7F4EE]');
+        studioChatTab.classList.add('text-[#8A8578]');
 
         studioTranscriptView.classList.remove('hidden');
         studioChatView.classList.add('hidden');
@@ -113,20 +145,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Source Switcher ---
     sourceYtBtn.addEventListener('click', () => {
         currentSourceType = 'youtube';
-        sourceYtBtn.classList.add('bg-sky-500', 'text-white', 'shadow-sm');
-        sourceYtBtn.classList.remove('text-slate-600');
-        sourceFileBtn.classList.remove('bg-sky-500', 'text-white', 'shadow-sm');
-        sourceFileBtn.classList.add('text-slate-600');
+        sourceYtBtn.classList.add('bg-[#14171C]', 'text-white');
+        sourceYtBtn.classList.remove('text-[#5A564C]');
+        sourceFileBtn.classList.remove('bg-[#14171C]', 'text-white');
+        sourceFileBtn.classList.add('text-[#5A564C]');
         ytSection.classList.remove('hidden');
         fileSection.classList.add('hidden');
     });
 
     sourceFileBtn.addEventListener('click', () => {
         currentSourceType = 'file';
-        sourceFileBtn.classList.add('bg-sky-500', 'text-white', 'shadow-sm');
-        sourceFileBtn.classList.remove('text-slate-600');
-        sourceYtBtn.classList.remove('bg-sky-500', 'text-white', 'shadow-sm');
-        sourceYtBtn.classList.add('text-slate-600');
+        sourceFileBtn.classList.add('bg-[#14171C]', 'text-white');
+        sourceFileBtn.classList.remove('text-[#5A564C]');
+        sourceYtBtn.classList.remove('bg-[#14171C]', 'text-white');
+        sourceYtBtn.classList.add('text-[#5A564C]');
         fileSection.classList.remove('hidden');
         ytSection.classList.add('hidden');
     });
@@ -136,16 +168,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     dropZone.addEventListener('dragover', (e) => {
         e.preventDefault();
-        dropZone.classList.add('border-sky-400');
+        dropZone.classList.add('border-[#14171C]');
     });
 
     dropZone.addEventListener('dragleave', () => {
-        dropZone.classList.remove('border-sky-400');
+        dropZone.classList.remove('border-[#14171C]');
     });
 
     dropZone.addEventListener('drop', (e) => {
         e.preventDefault();
-        dropZone.classList.remove('border-sky-400');
+        dropZone.classList.remove('border-[#14171C]');
         if (e.dataTransfer.files.length > 0) {
             handleFileSelect(e.dataTransfer.files[0]);
         }
@@ -180,27 +212,28 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentSourceType === 'youtube') {
             const url = ytUrlInput.value.trim();
             if (!url) {
-                alert('Please enter a valid YouTube video URL.');
+                alert('Please enter a YouTube video link.');
                 return;
             }
             formData.append('youtube_url', url);
         } else {
             if (!selectedFile) {
-                alert('Please select a media file to upload.');
+                alert('Please select an audio or video file to upload.');
                 return;
             }
             formData.append('file', selectedFile);
         }
 
-        // Show progress UI
+        // Show progress UI & start Tape Counter
         processBtn.disabled = true;
         processBtn.classList.add('opacity-50', 'cursor-not-allowed');
         progressCard.classList.remove('hidden');
 
-        updateStep(1, 'Downloading & extracting audio...', 20);
+        startTapeCounter();
+        updateStep(1, 'EXTRACTING AUDIO', 20);
 
         try {
-            updateStep(2, 'Transcribing audio (Speech-to-Text)...', 50);
+            updateStep(2, 'TRANSCRIBING AUDIO', 50);
 
             const response = await fetch('/api/process', {
                 method: 'POST',
@@ -210,17 +243,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.detail || 'Failed to process media.');
+                throw new Error(data.detail || 'Processing failed.');
             }
 
-            updateStep(3, 'Generating executive summary & insights...', 80);
-            updateStep(4, 'Indexing vector database for AI RAG Chat...', 95);
+            updateStep(3, 'SUMMARIZING CONTENT', 80);
+            updateStep(4, 'INDEXING VECTOR DATABASE', 95);
 
             // Store results locally
             currentResults = data;
             renderResults(data);
 
-            updateStep(4, 'Complete!', 100);
+            updateStep(4, 'TRANSCRIBED', 100);
+            stopTapeCounter('TRANSCRIBED');
+
             setTimeout(() => progressCard.classList.add('hidden'), 1200);
 
         } catch (err) {
@@ -228,7 +263,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
                 msg = 'Connection to server lost. Make sure backend is running at http://localhost:8000.';
             }
-            alert(`⚠️ Error: ${msg}`);
+            alert(`Error: ${msg}`);
+            stopTapeCounter('FAILED');
             progressCard.classList.add('hidden');
         } finally {
             processBtn.disabled = false;
@@ -237,22 +273,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function updateStep(stepNum, statusText, percent) {
-        progressStatusText.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> ${statusText}`;
+        progressStatusText.textContent = statusText;
+        if (tapeStatusText) tapeStatusText.textContent = statusText;
         progressBarFill.style.width = `${percent}%`;
         progressPercentage.textContent = `${percent}%`;
 
         [step1Badge, step2Badge, step3Badge, step4Badge].forEach((b, idx) => {
             if (idx + 1 <= stepNum) {
-                b.className = 'text-sky-600 font-bold';
+                b.className = 'text-[#14171C] font-bold';
             } else {
-                b.className = 'text-slate-400 font-medium';
+                b.className = 'text-[#8A8578] font-normal';
             }
         });
     }
 
     function renderResults(data) {
-        meetingTitle.innerHTML = `<i class="fa-solid fa-circle-play text-sky-500"></i> ${data.title}`;
-        meetingSubtitle.textContent = 'Analysis complete. Review summaries, key takeaways, and chat with AI side-by-side.';
+        meetingTitle.textContent = data.title;
+        meetingSubtitle.textContent = 'Transcript and insights ready.';
 
         summaryContent.textContent = data.summary;
         subActions.textContent = data.action_items;
@@ -268,8 +305,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Reset chat stream
         chatMessages.innerHTML = `
-            <div class="chat-bubble ai bg-white border border-slate-200 text-slate-800 p-3 rounded-xl max-w-[90%] text-xs leading-relaxed shadow-sm">
-                🤖 Indexed <strong>${data.title}</strong>! Ask me any question about the content.
+            <div class="chat-bubble ai bg-white border border-[#D5D1C8] text-[#14171C] p-3 rounded max-w-[90%] text-xs leading-relaxed font-sans">
+                <span class="font-mono text-[10px] font-bold text-[#8A8578] block mb-1">AI:</span>
+                Indexed transcript for <strong>${data.title}</strong>. Ask any question about this content below.
             </div>
         `;
     }
@@ -295,9 +333,9 @@ document.addEventListener('DOMContentLoaded', () => {
     copyTranscriptBtn.addEventListener('click', () => {
         if (!transcriptTextarea.value) return;
         navigator.clipboard.writeText(transcriptTextarea.value);
-        copyTranscriptBtn.innerHTML = `<i class="fa-solid fa-check text-emerald-600"></i> <span>Copied</span>`;
+        copyTranscriptBtn.textContent = '[ COPIED ]';
         setTimeout(() => {
-            copyTranscriptBtn.innerHTML = `<i class="fa-solid fa-copy text-sky-500"></i> <span>Copy</span>`;
+            copyTranscriptBtn.textContent = '[ COPY ]';
         }, 2000);
     });
 
@@ -328,7 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chatInput.value = '';
 
         // Add typing indicator
-        const typingId = appendChatMessage('ai', 'Thinking... <i class="fa-solid fa-circle-notch animate-spin ml-1"></i>');
+        const typingId = appendChatMessage('ai', 'Searching transcript...');
 
         try {
             const res = await fetch('/api/chat', {
@@ -343,13 +381,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // Update AI message
             const typingElem = document.getElementById(typingId);
             if (typingElem) {
-                typingElem.innerHTML = `🤖 ${data.answer}`;
+                typingElem.innerHTML = `<span class="font-mono text-[10px] font-bold text-[#8A8578] block mb-1">AI:</span>${data.answer}`;
             }
 
         } catch (err) {
             const typingElem = document.getElementById(typingId);
             if (typingElem) {
-                typingElem.innerHTML = `⚠️ Error: ${err.message}`;
+                typingElem.innerHTML = `<span class="font-mono text-[10px] font-bold text-[#C6402B] block mb-1">ERROR:</span>${err.message}`;
             }
         }
     }
@@ -360,11 +398,11 @@ document.addEventListener('DOMContentLoaded', () => {
         div.id = msgId;
 
         if (role === 'user') {
-            div.className = 'chat-bubble user bg-gradient-to-r from-sky-400 to-sky-600 text-white p-3 rounded-xl max-w-[90%] text-xs leading-relaxed ml-auto shadow-sm';
-            div.innerHTML = `👤 <b>You:</b> ${content}`;
+            div.className = 'chat-bubble user bg-[#14171C] text-white p-3 rounded max-w-[90%] text-xs leading-relaxed ml-auto font-sans';
+            div.innerHTML = `<span class="font-mono text-[10px] font-bold text-slate-400 block mb-1">YOU:</span>${content}`;
         } else {
-            div.className = 'chat-bubble ai bg-white border border-slate-200 text-slate-800 p-3 rounded-xl max-w-[90%] text-xs leading-relaxed mr-auto shadow-sm';
-            div.innerHTML = content;
+            div.className = 'chat-bubble ai bg-white border border-[#D5D1C8] text-[#14171C] p-3 rounded max-w-[90%] text-xs leading-relaxed mr-auto font-sans';
+            div.innerHTML = `<span class="font-mono text-[10px] font-bold text-[#8A8578] block mb-1">AI:</span>${content}`;
         }
 
         chatMessages.appendChild(div);
