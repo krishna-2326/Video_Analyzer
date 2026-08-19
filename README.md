@@ -1,3 +1,15 @@
+---
+title: VideoIntel AI Studio
+emoji: 🎬
+colorFrom: blue
+colorTo: indigo
+sdk: streamlit
+sdk_version: 1.35.0
+app_file: app.py
+pinned: false
+license: mit
+---
+
 # VideoIntel AI — Video & Audio Intelligence Studio 🚀
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110.0-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
