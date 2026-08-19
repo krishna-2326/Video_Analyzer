@@ -18,13 +18,13 @@ RUN pip install --no-cache-dir -r Requirements.txt
 # Copy application files
 COPY . .
 
-# Environment variables
-ENV PORT=8000
+# Environment variables (EXPOSE 7860 for Hugging Face Spaces / $PORT for cloud)
+ENV PORT=7860
 ENV WHISPER_MODEL=base
 ENV PIP_ROOT_USER_ACTION=ignore
 
-# Expose port
-EXPOSE 8000
+# Expose default port
+EXPOSE 7860
 
-# Start FastAPI server on $PORT (dynamically assigned by cloud providers like Render)
-CMD ["sh", "-c", "uvicorn server:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Start FastAPI server on $PORT or 7860
+CMD ["sh", "-c", "uvicorn server:app --host 0.0.0.0 --port ${PORT:-7860}"]
