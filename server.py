@@ -14,7 +14,7 @@ load_dotenv()
 from utils.audio_processor import process_input
 from core.transcriber import transcribe_all
 from core.summarizer import summarize, generate_title
-from core.extractor import extract_action_items, extract_key_decisions, extract_questions
+from core.extractor import extract_action_items, extract_key_decisions, extract_questions, extract_key_moments
 from core.rag_engine import build_rag_chain, ask_question
 from utils.exporter import generate_txt_report, generate_pdf_report
 
@@ -114,10 +114,11 @@ def process_video_or_audio(
         title = generate_title(transcript)
         summary = summarize(transcript)
 
-        # Step 4: Extract Insights
+        # Step 4: Extract Insights & Key Moments
         action_items = extract_action_items(transcript)
         decisions = extract_key_decisions(transcript)
         questions = extract_questions(transcript)
+        key_moments = extract_key_moments(transcript)
 
         # Step 5: RAG Vector Indexing
         rag_chain = build_rag_chain(transcript)
@@ -129,6 +130,7 @@ def process_video_or_audio(
         session_data["action_items"] = action_items
         session_data["key_decisions"] = decisions
         session_data["open_questions"] = questions
+        session_data["key_moments"] = key_moments
         session_data["rag_chain"] = rag_chain
 
         return {
@@ -138,6 +140,7 @@ def process_video_or_audio(
             "action_items": action_items,
             "key_decisions": decisions,
             "open_questions": questions,
+            "key_moments": key_moments,
             "transcript": transcript,
         }
 

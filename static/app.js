@@ -45,11 +45,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const subActions = document.getElementById('sub-actions');
     const subDecisions = document.getElementById('sub-decisions');
     const subQuestions = document.getElementById('sub-questions');
+    const subMoments = document.getElementById('sub-moments');
 
     const transcriptTextarea = document.getElementById('transcript-textarea');
     const transcriptSearch = document.getElementById('transcript-search');
     const wordCountBadge = document.getElementById('word-count-badge');
     const copyTranscriptBtn = document.getElementById('copy-transcript-btn');
+    const copySummaryBtn = document.getElementById('copy-summary-btn');
 
     // Studio Switcher Elements
     const studioChatTab = document.getElementById('studio-chat-tab');
@@ -106,11 +108,11 @@ document.addEventListener('DOMContentLoaded', () => {
             tab.classList.add('active', 'text-[#CCFF00]', 'border-[#CCFF00]');
             tab.classList.remove('text-slate-400', 'border-transparent');
 
-            [subActions, subDecisions, subQuestions].forEach(el => {
-                if (el.id === `sub-${target}`) {
+            [subActions, subDecisions, subQuestions, subMoments].forEach(el => {
+                if (el && el.id === `sub-${target}`) {
                     el.classList.remove('hidden');
                     el.classList.add('active');
-                } else {
+                } else if (el) {
                     el.classList.add('hidden');
                     el.classList.remove('active');
                 }
@@ -288,12 +290,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderResults(data) {
         meetingTitle.innerHTML = `<i class="fa-solid fa-circle-play text-[#CCFF00]"></i> ${data.title}`;
-        meetingSubtitle.textContent = 'Analysis complete. Explore summaries, key takeaways, and chat with AI.';
+        meetingSubtitle.textContent = 'Analysis complete. Explore executive summaries, key takeaways, and interactive AI chat.';
 
         summaryContent.textContent = data.summary;
         subActions.textContent = data.action_items;
         subDecisions.textContent = data.key_decisions;
         subQuestions.textContent = data.open_questions;
+        if (subMoments && data.key_moments) {
+            subMoments.textContent = data.key_moments;
+        }
 
         transcriptTextarea.value = data.transcript;
 
@@ -322,6 +327,19 @@ document.addEventListener('DOMContentLoaded', () => {
             transcriptTextarea.value = filtered.length > 0
                 ? `--- Search Matches for "${term}" (${filtered.length} lines found) ---\n\n` + filtered.join('\n')
                 : `No lines matching "${term}" found in transcript.`;
+        });
+    }
+
+    // --- Copy Brief ---
+    if (copySummaryBtn) {
+        copySummaryBtn.addEventListener('click', () => {
+            if (!summaryContent.textContent) return;
+            const fullBrief = `EXECUTIVE SUMMARY:\n${summaryContent.textContent}\n\nPRACTICAL STEPS:\n${subActions.textContent}\n\nKEY DECISIONS:\n${subDecisions.textContent}`;
+            navigator.clipboard.writeText(fullBrief);
+            copySummaryBtn.innerHTML = `<i class="fa-solid fa-check text-[#CCFF00]"></i> <span>Brief Copied</span>`;
+            setTimeout(() => {
+                copySummaryBtn.innerHTML = `<i class="fa-solid fa-copy text-[#CCFF00]"></i> <span>Copy Brief</span>`;
+            }, 2000);
         });
     }
 
