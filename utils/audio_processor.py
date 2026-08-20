@@ -4,8 +4,7 @@ import shutil
 import time
 from dotenv import load_dotenv
 from pydub import AudioSegment
-load_dotenv()
-
+import pyperclip
 # Automatically configure FFmpeg executable path from imageio_ffmpeg if installed
 try:
     import imageio_ffmpeg
@@ -57,7 +56,7 @@ def _auth_attempts() -> list[tuple[str, dict]]:
             },
         ))
 
-    if cookie_file and os.path.exists(cookie_file):
+    if cookie_file:
         attempts.append(("cookie_file", {"cookiefile": cookie_file}))
 
     if cookies_from_browser:
@@ -79,20 +78,10 @@ def _build_ydl_opts(output_path: str, auth_overrides: dict) -> dict:
             }
         ],
         "quiet": True,
-        "retries": 3,
-        "fragment_retries": 3,
+        "retries": 2,
+        "fragment_retries": 2,
         "sleep_interval_requests": 1,
-        "nocheckcertificate": True,
-        "extractor_args": {
-            "youtube": {
-                "player_client": ["android", "ios", "mweb", "web"],
-                "player_skip": ["configs", "webpage"]
-            }
-        },
-        "http_headers": {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-            "Accept-Language": "en-US,en;q=0.9",
-        }
+        "remote_components": ["ejs:github"],
     }
     if js_runtimes:
         ydl_opts["js_runtimes"] = {runtime: {} for runtime in js_runtimes}
@@ -191,3 +180,37 @@ def _looks_like_youtube_url(text: str) -> bool:
     return text.startswith(("http://", "https://")) and (
         "youtube.com" in text or "youtu.be" in text
     )
+
+
+def watch_clipboard(poll_interval: float = 1.0) -> None:
+    """
+    Polls the clipboard. Whenever a NEW value is copied that looks like a
+    YouTube link, automatically runs process_input on it -- no manual
+    running of the script or pressing enter needed.
+    """
+    print("Watching clipboard for YouTube links... (Ctrl+C to stop)")
+    last_seen = None
+
+    while True:
+        try:
+            current = pyperclip.paste()
+        except Exception as exc:
+            print(f"Clipboard read failed: {exc}")
+            time.sleep(poll_interval)
+            continue
+
+        if current != last_seen:
+            last_seen = current
+            if _looks_like_youtube_url(current):
+                print(f"\nDetected YouTube link: {current}")
+                try:
+                    process_input(current.strip())
+                except Exception as exc:
+                    print(f"Failed to process link: {exc}")
+                print("Watching clipboard for YouTube links... (Ctrl+C to stop)")
+
+        time.sleep(poll_interval)
+
+
+if __name__ == "__main__":
+    watch_clipboard()
