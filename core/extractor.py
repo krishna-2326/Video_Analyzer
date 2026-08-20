@@ -82,19 +82,4 @@ def extract_questions(transcript: str) -> str:
         "Format as a numbered list. "
         "If no explicit questions were asked, summarize the main themes or topics raised for the audience."
     )
-    return chain.invoke(_prepare_transcript(transcript))
-
-
-def extract_key_moments(transcript: str) -> str:
-    if not transcript or not transcript.strip():
-        return "No key moments found."
-
-    chain = build_chain(
-        "From the transcript, extract 4-6 key chapters or major milestone moments with estimated timestamps.\n"
-        "Format as bullet points with estimated timestamps like:\n"
-        "- [00:00] Introduction & Overview\n"
-        "- [02:30] Primary Concept Discussion\n"
-        "- [05:45] Key Takeaways & Conclusion\n"
-        "Always output clean, structured timeline items."
-    )
-    return chain.invoke(_prepare_transcript(transcript))
+    return chain.invoke(_prepare_transcript(transcript))

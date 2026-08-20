@@ -37,17 +37,11 @@ def _available_js_runtimes() -> list[str]:
 
 
 def _auth_attempts() -> list[tuple[str, dict]]:
-    cookie_file = os.getenv("YTDLP_COOKIE_FILE", "").strip()
     cookies_from_browser = os.getenv("YTDLP_COOKIES_FROM_BROWSER", "").strip()
+    cookie_file = os.getenv("YTDLP_COOKIE_FILE", "").strip()
     visitor_data = os.getenv("YTDLP_VISITOR_DATA", "").strip()
 
-    # Candidate player client configurations to bypass 403 Forbidden errors
-    attempts: list[tuple[str, dict]] = [
-        ("android_client", {"extractor_args": {"youtube": {"player_client": ["android", "web"]}}}),
-        ("ios_client", {"extractor_args": {"youtube": {"player_client": ["ios", "mweb"]}}}),
-        ("mweb_client", {"extractor_args": {"youtube": {"player_client": ["mweb", "web"]}}}),
-        ("default_client", {}),
-    ]
+    attempts: list[tuple[str, dict]] = [("no_auth", {})]
 
     if visitor_data:
         attempts.append((
@@ -63,7 +57,7 @@ def _auth_attempts() -> list[tuple[str, dict]]:
             },
         ))
 
-    if cookie_file and os.path.exists(cookie_file):
+    if cookie_file:
         attempts.append(("cookie_file", {"cookiefile": cookie_file}))
 
     if cookies_from_browser:

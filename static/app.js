@@ -45,13 +45,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const subActions = document.getElementById('sub-actions');
     const subDecisions = document.getElementById('sub-decisions');
     const subQuestions = document.getElementById('sub-questions');
-    const subMoments = document.getElementById('sub-moments');
 
     const transcriptTextarea = document.getElementById('transcript-textarea');
     const transcriptSearch = document.getElementById('transcript-search');
     const wordCountBadge = document.getElementById('word-count-badge');
+    const charCountBadge = document.getElementById('char-count-badge');
     const copyTranscriptBtn = document.getElementById('copy-transcript-btn');
-    const copySummaryBtn = document.getElementById('copy-summary-btn');
 
     // Studio Switcher Elements
     const studioChatTab = document.getElementById('studio-chat-tab');
@@ -75,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
         stopTapeCounter();
         tapeSeconds = 0;
         if (tapeCounter) tapeCounter.classList.remove('hidden');
-        if (recDot) recDot.className = 'w-2 h-2 rounded-full bg-[#CCFF00] animate-pulse';
+        if (recDot) recDot.className = 'w-2 h-2 rounded-full bg-[#C6402B] animate-pulse';
 
         tapeTimerInterval = setInterval(() => {
             tapeSeconds++;
@@ -86,13 +85,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
     }
 
-    function stopTapeCounter(finalStatus = 'Ready') {
+    function stopTapeCounter(finalStatus = 'READY') {
         if (tapeTimerInterval) {
             clearInterval(tapeTimerInterval);
             tapeTimerInterval = null;
         }
         if (tapeStatusText) tapeStatusText.textContent = finalStatus;
-        if (recDot) recDot.className = 'w-2 h-2 rounded-full bg-slate-500';
+        if (recDot) recDot.className = 'w-2 h-2 rounded-full bg-[#8A8578]';
     }
 
     // --- Sub-Insight Tabs ---
@@ -102,17 +101,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const target = tab.getAttribute('data-sub');
 
             subInsightTabs.forEach(t => {
-                t.classList.remove('active', 'text-[#CCFF00]', 'border-[#CCFF00]');
-                t.classList.add('text-slate-400', 'border-transparent');
+                t.classList.remove('active', 'text-[#14171C]', 'border-[#C6402B]');
+                t.classList.add('text-[#8A8578]', 'border-transparent');
             });
-            tab.classList.add('active', 'text-[#CCFF00]', 'border-[#CCFF00]');
-            tab.classList.remove('text-slate-400', 'border-transparent');
+            tab.classList.add('active', 'text-[#14171C]', 'border-[#C6402B]');
+            tab.classList.remove('text-[#8A8578]', 'border-transparent');
 
-            [subActions, subDecisions, subQuestions, subMoments].forEach(el => {
-                if (el && el.id === `sub-${target}`) {
+            [subActions, subDecisions, subQuestions].forEach(el => {
+                if (el.id === `sub-${target}`) {
                     el.classList.remove('hidden');
                     el.classList.add('active');
-                } else if (el) {
+                } else {
                     el.classList.add('hidden');
                     el.classList.remove('active');
                 }
@@ -122,10 +121,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Studio View Switcher ---
     studioChatTab.addEventListener('click', () => {
-        studioChatTab.classList.add('active', 'text-[#CCFF00]', 'bg-white/[0.08]');
-        studioChatTab.classList.remove('text-slate-400');
-        studioTranscriptTab.classList.remove('active', 'text-[#CCFF00]', 'bg-white/[0.08]');
-        studioTranscriptTab.classList.add('text-slate-400');
+        studioChatTab.classList.add('active', 'text-[#14171C]', 'bg-[#F7F4EE]');
+        studioChatTab.classList.remove('text-[#8A8578]');
+        studioTranscriptTab.classList.remove('active', 'text-[#14171C]', 'bg-[#F7F4EE]');
+        studioTranscriptTab.classList.add('text-[#8A8578]');
 
         studioChatView.classList.remove('hidden');
         studioTranscriptView.classList.add('hidden');
@@ -133,10 +132,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     studioTranscriptTab.addEventListener('click', () => {
-        studioTranscriptTab.classList.add('active', 'text-[#CCFF00]', 'bg-white/[0.08]');
-        studioTranscriptTab.classList.remove('text-slate-400');
-        studioChatTab.classList.remove('active', 'text-[#CCFF00]', 'bg-white/[0.08]');
-        studioChatTab.classList.add('text-slate-400');
+        studioTranscriptTab.classList.add('active', 'text-[#14171C]', 'bg-[#F7F4EE]');
+        studioTranscriptTab.classList.remove('text-[#8A8578]');
+        studioChatTab.classList.remove('active', 'text-[#14171C]', 'bg-[#F7F4EE]');
+        studioChatTab.classList.add('text-[#8A8578]');
 
         studioTranscriptView.classList.remove('hidden');
         studioChatView.classList.add('hidden');
@@ -146,20 +145,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Source Switcher ---
     sourceYtBtn.addEventListener('click', () => {
         currentSourceType = 'youtube';
-        sourceYtBtn.classList.add('bg-[#CCFF00]', 'text-black', 'shadow-[0_0_15px_rgba(204,255,0,0.25)]');
-        sourceYtBtn.classList.remove('text-slate-400');
-        sourceFileBtn.classList.remove('bg-[#CCFF00]', 'text-black', 'shadow-[0_0_15px_rgba(204,255,0,0.25)]');
-        sourceFileBtn.classList.add('text-slate-400');
+        sourceYtBtn.classList.add('bg-[#14171C]', 'text-white');
+        sourceYtBtn.classList.remove('text-[#5A564C]');
+        sourceFileBtn.classList.remove('bg-[#14171C]', 'text-white');
+        sourceFileBtn.classList.add('text-[#5A564C]');
         ytSection.classList.remove('hidden');
         fileSection.classList.add('hidden');
     });
 
     sourceFileBtn.addEventListener('click', () => {
         currentSourceType = 'file';
-        sourceFileBtn.classList.add('bg-[#CCFF00]', 'text-black', 'shadow-[0_0_15px_rgba(204,255,0,0.25)]');
-        sourceFileBtn.classList.remove('text-slate-400');
-        sourceYtBtn.classList.remove('bg-[#CCFF00]', 'text-black', 'shadow-[0_0_15px_rgba(204,255,0,0.25)]');
-        sourceYtBtn.classList.add('text-slate-400');
+        sourceFileBtn.classList.add('bg-[#14171C]', 'text-white');
+        sourceFileBtn.classList.remove('text-[#5A564C]');
+        sourceYtBtn.classList.remove('bg-[#14171C]', 'text-white');
+        sourceYtBtn.classList.add('text-[#5A564C]');
         fileSection.classList.remove('hidden');
         ytSection.classList.add('hidden');
     });
@@ -169,16 +168,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     dropZone.addEventListener('dragover', (e) => {
         e.preventDefault();
-        dropZone.classList.add('border-[#CCFF00]');
+        dropZone.classList.add('border-[#14171C]');
     });
 
     dropZone.addEventListener('dragleave', () => {
-        dropZone.classList.remove('border-[#CCFF00]');
+        dropZone.classList.remove('border-[#14171C]');
     });
 
     dropZone.addEventListener('drop', (e) => {
         e.preventDefault();
-        dropZone.classList.remove('border-[#CCFF00]');
+        dropZone.classList.remove('border-[#14171C]');
         if (e.dataTransfer.files.length > 0) {
             handleFileSelect(e.dataTransfer.files[0]);
         }
@@ -213,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentSourceType === 'youtube') {
             const url = ytUrlInput.value.trim();
             if (!url) {
-                alert('Please enter a YouTube video URL.');
+                alert('Please enter a YouTube video link.');
                 return;
             }
             formData.append('youtube_url', url);
@@ -231,10 +230,10 @@ document.addEventListener('DOMContentLoaded', () => {
         progressCard.classList.remove('hidden');
 
         startTapeCounter();
-        updateStep(1, 'Extracting audio...', 20);
+        updateStep(1, 'EXTRACTING AUDIO', 20);
 
         try {
-            updateStep(2, 'Transcribing audio...', 50);
+            updateStep(2, 'TRANSCRIBING AUDIO', 50);
 
             const response = await fetch('/api/process', {
                 method: 'POST',
@@ -247,15 +246,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(data.detail || 'Processing failed.');
             }
 
-            updateStep(3, 'Generating executive summary...', 80);
-            updateStep(4, 'Building vector RAG index...', 95);
+            updateStep(3, 'SUMMARIZING CONTENT', 80);
+            updateStep(4, 'INDEXING VECTOR DATABASE', 95);
 
             // Store results locally
             currentResults = data;
             renderResults(data);
 
-            updateStep(4, 'Transcribed', 100);
-            stopTapeCounter('Transcribed');
+            updateStep(4, 'TRANSCRIBED', 100);
+            stopTapeCounter('TRANSCRIBED');
 
             setTimeout(() => progressCard.classList.add('hidden'), 1200);
 
@@ -265,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 msg = 'Connection to server lost. Make sure backend is running at http://localhost:8000.';
             }
             alert(`Error: ${msg}`);
-            stopTapeCounter('Failed');
+            stopTapeCounter('FAILED');
             progressCard.classList.add('hidden');
         } finally {
             processBtn.disabled = false;
@@ -274,41 +273,41 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function updateStep(stepNum, statusText, percent) {
-        progressStatusText.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> ${statusText}`;
+        progressStatusText.textContent = statusText;
         if (tapeStatusText) tapeStatusText.textContent = statusText;
         progressBarFill.style.width = `${percent}%`;
         progressPercentage.textContent = `${percent}%`;
 
         [step1Badge, step2Badge, step3Badge, step4Badge].forEach((b, idx) => {
             if (idx + 1 <= stepNum) {
-                b.className = 'text-[#CCFF00] font-bold';
+                b.className = 'text-[#14171C] font-bold';
             } else {
-                b.className = 'text-slate-400 font-normal';
+                b.className = 'text-[#8A8578] font-normal';
             }
         });
     }
 
     function renderResults(data) {
-        meetingTitle.innerHTML = `<i class="fa-solid fa-circle-play text-[#CCFF00]"></i> ${data.title}`;
-        meetingSubtitle.textContent = 'Analysis complete. Explore executive summaries, key takeaways, and interactive AI chat.';
+        meetingTitle.textContent = data.title;
+        meetingSubtitle.textContent = 'Transcript and insights ready.';
 
         summaryContent.textContent = data.summary;
         subActions.textContent = data.action_items;
         subDecisions.textContent = data.key_decisions;
         subQuestions.textContent = data.open_questions;
-        if (subMoments && data.key_moments) {
-            subMoments.textContent = data.key_moments;
-        }
 
         transcriptTextarea.value = data.transcript;
 
         const words = data.transcript.trim().split(/\s+/).length;
+        const chars = data.transcript.length;
         wordCountBadge.textContent = words.toLocaleString();
+        charCountBadge.textContent = chars.toLocaleString();
 
         // Reset chat stream
         chatMessages.innerHTML = `
-            <div class="chat-bubble ai bg-[#171922] border border-white/[0.08] text-slate-200 p-3 rounded-2xl max-w-[88%] text-xs leading-relaxed">
-                🤖 Indexed <strong>${data.title}</strong>! Ask any question about the content.
+            <div class="chat-bubble ai bg-white border border-[#D5D1C8] text-[#14171C] p-3 rounded max-w-[90%] text-xs leading-relaxed font-sans">
+                <span class="font-mono text-[10px] font-bold text-[#8A8578] block mb-1">AI:</span>
+                Indexed transcript for <strong>${data.title}</strong>. Ask any question about this content below.
             </div>
         `;
     }
@@ -330,26 +329,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Copy Brief ---
-    if (copySummaryBtn) {
-        copySummaryBtn.addEventListener('click', () => {
-            if (!summaryContent.textContent) return;
-            const fullBrief = `EXECUTIVE SUMMARY:\n${summaryContent.textContent}\n\nPRACTICAL STEPS:\n${subActions.textContent}\n\nKEY DECISIONS:\n${subDecisions.textContent}`;
-            navigator.clipboard.writeText(fullBrief);
-            copySummaryBtn.innerHTML = `<i class="fa-solid fa-check text-[#CCFF00]"></i> <span>Brief Copied</span>`;
-            setTimeout(() => {
-                copySummaryBtn.innerHTML = `<i class="fa-solid fa-copy text-[#CCFF00]"></i> <span>Copy Brief</span>`;
-            }, 2000);
-        });
-    }
-
     // --- Copy Transcript ---
     copyTranscriptBtn.addEventListener('click', () => {
         if (!transcriptTextarea.value) return;
         navigator.clipboard.writeText(transcriptTextarea.value);
-        copyTranscriptBtn.innerHTML = `<i class="fa-solid fa-check text-[#CCFF00]"></i> <span>Copied</span>`;
+        copyTranscriptBtn.textContent = '[ COPIED ]';
         setTimeout(() => {
-            copyTranscriptBtn.innerHTML = `<i class="fa-solid fa-copy"></i> <span>Copy</span>`;
+            copyTranscriptBtn.textContent = '[ COPY ]';
         }, 2000);
     });
 
@@ -380,7 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chatInput.value = '';
 
         // Add typing indicator
-        const typingId = appendChatMessage('ai', 'Thinking... <i class="fa-solid fa-circle-notch animate-spin ml-1"></i>');
+        const typingId = appendChatMessage('ai', 'Searching transcript...');
 
         try {
             const res = await fetch('/api/chat', {
@@ -395,13 +381,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // Update AI message
             const typingElem = document.getElementById(typingId);
             if (typingElem) {
-                typingElem.innerHTML = `🤖 ${data.answer}`;
+                typingElem.innerHTML = `<span class="font-mono text-[10px] font-bold text-[#8A8578] block mb-1">AI:</span>${data.answer}`;
             }
 
         } catch (err) {
             const typingElem = document.getElementById(typingId);
             if (typingElem) {
-                typingElem.innerHTML = `⚠️ Error: ${err.message}`;
+                typingElem.innerHTML = `<span class="font-mono text-[10px] font-bold text-[#C6402B] block mb-1">ERROR:</span>${err.message}`;
             }
         }
     }
@@ -412,11 +398,11 @@ document.addEventListener('DOMContentLoaded', () => {
         div.id = msgId;
 
         if (role === 'user') {
-            div.className = 'chat-bubble user bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-3 rounded-2xl max-w-[88%] text-xs leading-relaxed ml-auto shadow-md';
-            div.innerHTML = `👤 <b>You:</b> ${content}`;
+            div.className = 'chat-bubble user bg-[#14171C] text-white p-3 rounded max-w-[90%] text-xs leading-relaxed ml-auto font-sans';
+            div.innerHTML = `<span class="font-mono text-[10px] font-bold text-slate-400 block mb-1">YOU:</span>${content}`;
         } else {
-            div.className = 'chat-bubble ai bg-[#171922] border border-white/[0.08] text-slate-200 p-3 rounded-2xl max-w-[88%] text-xs leading-relaxed mr-auto';
-            div.innerHTML = content;
+            div.className = 'chat-bubble ai bg-white border border-[#D5D1C8] text-[#14171C] p-3 rounded max-w-[90%] text-xs leading-relaxed mr-auto font-sans';
+            div.innerHTML = `<span class="font-mono text-[10px] font-bold text-[#8A8578] block mb-1">AI:</span>${content}`;
         }
 
         chatMessages.appendChild(div);
