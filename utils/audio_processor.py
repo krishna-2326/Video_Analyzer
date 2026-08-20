@@ -3,10 +3,10 @@ import os
 import shutil
 import time
 from dotenv import load_dotenv
-try:
-    import pyperclip
-except Exception:
-    pyperclip = None
+from pydub import AudioSegment
+
+load_dotenv()
+
 # Automatically configure FFmpeg executable path from imageio_ffmpeg if installed
 try:
     import imageio_ffmpeg
@@ -195,7 +195,8 @@ def watch_clipboard(poll_interval: float = 1.0) -> None:
 
     while True:
         try:
-            current = pyperclip.paste() if pyperclip else ""
+            import pyperclip
+            current = pyperclip.paste()
         except Exception as exc:
             print(f"Clipboard read failed: {exc}")
             time.sleep(poll_interval)
