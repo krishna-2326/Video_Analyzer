@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentSourceType = 'youtube';
     let selectedFile = null;
     let currentResults = null;
+    let pollTimer = null;
 
     // DOM Elements
     const sourceYtBtn = document.getElementById('source-yt-btn');
@@ -81,194 +82,235 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Source Switcher ---
-    sourceYtBtn.addEventListener('click', () => {
-        currentSourceType = 'youtube';
-        sourceYtBtn.classList.add('bg-gradient-to-r', 'from-sky-600', 'to-indigo-600', 'text-white', 'shadow-md');
-        sourceYtBtn.classList.remove('text-slate-400');
-        sourceFileBtn.classList.remove('bg-gradient-to-r', 'from-sky-600', 'to-indigo-600', 'text-white', 'shadow-md');
-        sourceFileBtn.classList.add('text-slate-400');
-        ytSection.classList.remove('hidden');
-        fileSection.classList.add('hidden');
-    });
+    if (sourceYtBtn && sourceFileBtn) {
+        sourceYtBtn.addEventListener('click', () => {
+            currentSourceType = 'youtube';
+            sourceYtBtn.classList.add('bg-gradient-to-r', 'from-sky-600', 'to-indigo-600', 'text-white', 'shadow-md');
+            sourceYtBtn.classList.remove('text-slate-400');
+            sourceFileBtn.classList.remove('bg-gradient-to-r', 'from-sky-600', 'to-indigo-600', 'text-white', 'shadow-md');
+            sourceFileBtn.classList.add('text-slate-400');
+            if (ytSection) ytSection.classList.remove('hidden');
+            if (fileSection) fileSection.classList.add('hidden');
+        });
 
-    sourceFileBtn.addEventListener('click', () => {
-        currentSourceType = 'file';
-        sourceFileBtn.classList.add('bg-gradient-to-r', 'from-sky-600', 'to-indigo-600', 'text-white', 'shadow-md');
-        sourceFileBtn.classList.remove('text-slate-400');
-        sourceYtBtn.classList.remove('bg-gradient-to-r', 'from-sky-600', 'to-indigo-600', 'text-white', 'shadow-md');
-        sourceYtBtn.classList.add('text-slate-400');
-        fileSection.classList.remove('hidden');
-        ytSection.classList.add('hidden');
-    });
-
-    // --- File Drag & Drop ---
-    dropZone.addEventListener('click', () => fileUploadInput.click());
-
-    dropZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropZone.classList.add('border-sky-500');
-    });
-
-    dropZone.addEventListener('dragleave', () => {
-        dropZone.classList.remove('border-sky-500');
-    });
-
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('border-sky-500');
-        if (e.dataTransfer.files.length > 0) {
-            handleFileSelect(e.dataTransfer.files[0]);
-        }
-    });
-
-    fileUploadInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-            handleFileSelect(e.target.files[0]);
-        }
-    });
-
-    function handleFileSelect(file) {
-        selectedFile = file;
-        fileNameSpan.textContent = file.name;
-        dropZone.classList.add('hidden');
-        fileInfo.classList.remove('hidden');
+        sourceFileBtn.addEventListener('click', () => {
+            currentSourceType = 'file';
+            sourceFileBtn.classList.add('bg-gradient-to-r', 'from-sky-600', 'to-indigo-600', 'text-white', 'shadow-md');
+            sourceFileBtn.classList.remove('text-slate-400');
+            sourceYtBtn.classList.remove('bg-gradient-to-r', 'from-sky-600', 'to-indigo-600', 'text-white', 'shadow-md');
+            sourceYtBtn.classList.add('text-slate-400');
+            if (fileSection) fileSection.classList.remove('hidden');
+            if (ytSection) ytSection.classList.add('hidden');
+        });
     }
 
-    removeFileBtn.addEventListener('click', () => {
-        selectedFile = null;
-        fileUploadInput.value = '';
-        fileInfo.classList.add('hidden');
-        dropZone.classList.remove('hidden');
-    });
+    // --- File Drag & Drop ---
+    if (dropZone && fileUploadInput) {
+        dropZone.addEventListener('click', () => fileUploadInput.click());
 
-    // --- Process & Analyze Call ---
-    processBtn.addEventListener('click', async () => {
-        const formData = new FormData();
-        formData.append('source_type', currentSourceType);
-        formData.append('language', languageSelect.value);
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('border-sky-500');
+        });
 
-        if (currentSourceType === 'youtube') {
-            const url = ytUrlInput.value.trim();
-            if (!url) {
-                alert('Please enter a YouTube video URL.');
-                return;
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('border-sky-500');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-sky-500');
+            if (e.dataTransfer.files.length > 0) {
+                handleFileSelect(e.dataTransfer.files[0]);
             }
-            formData.append('youtube_url', url);
-        } else {
-            if (!selectedFile) {
-                alert('Please select an audio or video file to upload.');
-                return;
-            }
-            formData.append('file', selectedFile);
-        }
+        });
 
-        // Show progress UI
-        processBtn.disabled = true;
-        processBtn.classList.add('opacity-50', 'cursor-not-allowed');
-        progressCard.classList.remove('hidden');
-        
-        updateStep(1, 'Downloading & extracting audio...', 20);
-
-        try {
-            updateStep(2, 'Transcribing audio with Speech-to-Text...', 50);
-            
-            const response = await fetch('/api/process', {
-                method: 'POST',
-                body: formData
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.detail || 'Failed to process audio.');
-            }
-
-            updateStep(3, 'Generating executive summary & key takeaways...', 80);
-            updateStep(4, 'Building vector RAG index for AI Chat...', 95);
-            
-            // Store results locally
-            currentResults = data;
-            renderResults(data);
-
-            updateStep(4, 'Processing Complete!', 100);
-            setTimeout(() => progressCard.classList.add('hidden'), 1500);
-
-        } catch (err) {
-            let msg = err.message || 'Processing failed.';
-            if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
-                msg = 'Connection to server lost. Make sure backend is running at http://localhost:8000.';
-            }
-            alert(`⚠️ Error: ${msg}`);
-            progressCard.classList.add('hidden');
-        } finally {
-            processBtn.disabled = false;
-            processBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-        }
-    });
-
-    function updateStep(stepNum, statusText, percent) {
-        progressStatusText.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> ${statusText}`;
-        progressBarFill.style.width = `${percent}%`;
-        progressPercentage.textContent = `${percent}%`;
-
-        // Highlight step badges
-        [step1Badge, step2Badge, step3Badge, step4Badge].forEach((b, idx) => {
-            if (idx + 1 <= stepNum) {
-                b.className = 'text-sky-400 font-bold';
-            } else {
-                b.className = 'text-slate-500 font-medium';
+        fileUploadInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
             }
         });
     }
 
+    function handleFileSelect(file) {
+        selectedFile = file;
+        if (fileNameSpan) fileNameSpan.textContent = file.name;
+        if (dropZone) dropZone.classList.add('hidden');
+        if (fileInfo) fileInfo.classList.remove('hidden');
+    }
+
+    if (removeFileBtn) {
+        removeFileBtn.addEventListener('click', () => {
+            selectedFile = null;
+            if (fileUploadInput) fileUploadInput.value = '';
+            if (fileInfo) fileInfo.classList.add('hidden');
+            if (dropZone) dropZone.classList.remove('hidden');
+        });
+    }
+
+    // --- Process & Analyze Call ---
+    if (processBtn) {
+        processBtn.addEventListener('click', async () => {
+            const formData = new FormData();
+            formData.append('source_type', currentSourceType);
+            formData.append('language', languageSelect ? languageSelect.value : 'english');
+
+            if (currentSourceType === 'youtube') {
+                const url = ytUrlInput ? ytUrlInput.value.trim() : '';
+                if (!url) {
+                    alert('Please enter a YouTube video URL.');
+                    return;
+                }
+                formData.append('youtube_url', url);
+            } else {
+                if (!selectedFile) {
+                    alert('Please select an audio or video file to upload.');
+                    return;
+                }
+                formData.append('file', selectedFile);
+            }
+
+            // Show progress UI
+            processBtn.disabled = true;
+            processBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            if (progressCard) progressCard.classList.remove('hidden');
+            
+            updateProgressUI('Starting video/audio analysis...', 10);
+
+            try {
+                // Start background job - returns in 0.05 seconds!
+                const response = await fetch('/api/process', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Failed to start processing job.');
+                }
+
+                const jobId = data.job_id;
+
+                // Start smooth status polling every 1.5 seconds
+                pollJobStatus(jobId);
+
+            } catch (err) {
+                alert(`⚠️ Error: ${err.message}`);
+                if (progressCard) progressCard.classList.add('hidden');
+                processBtn.disabled = false;
+                processBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        });
+    }
+
+    function pollJobStatus(jobId) {
+        if (pollTimer) clearInterval(pollTimer);
+
+        pollTimer = setInterval(async () => {
+            try {
+                const res = await fetch(`/api/status/${jobId}`);
+                const data = await res.json();
+
+                if (!res.ok) {
+                    clearInterval(pollTimer);
+                    throw new Error(data.detail || 'Failed to fetch status.');
+                }
+
+                updateProgressUI(data.status_text, data.percent);
+
+                if (data.status === 'complete') {
+                    clearInterval(pollTimer);
+                    currentResults = data.result;
+                    renderResults(data.result);
+                    setTimeout(() => { if (progressCard) progressCard.classList.add('hidden'); }, 1500);
+                    if (processBtn) {
+                        processBtn.disabled = false;
+                        processBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
+                } else if (data.status === 'failed') {
+                    clearInterval(pollTimer);
+                    alert(`⚠️ Processing failed: ${data.error}`);
+                    if (progressCard) progressCard.classList.add('hidden');
+                    if (processBtn) {
+                        processBtn.disabled = false;
+                        processBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
+                }
+
+            } catch (err) {
+                console.error('Status poll error:', err);
+            }
+        }, 1500);
+    }
+
+    function updateProgressUI(statusText, percent) {
+        if (progressStatusText) progressStatusText.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> ${statusText}`;
+        if (progressBarFill) progressBarFill.style.width = `${percent}%`;
+        if (progressPercentage) progressPercentage.textContent = `${percent}%`;
+
+        // Highlight step badges based on percentage
+        if (step1Badge && percent >= 20) step1Badge.className = 'text-sky-400 font-bold';
+        if (step2Badge && percent >= 50) step2Badge.className = 'text-sky-400 font-bold';
+        if (step3Badge && percent >= 75) step3Badge.className = 'text-sky-400 font-bold';
+        if (step4Badge && percent >= 95) step4Badge.className = 'text-sky-400 font-bold';
+    }
+
     function renderResults(data) {
-        meetingTitle.innerHTML = `<i class="fa-solid fa-circle-play text-sky-400"></i> ${data.title}`;
-        meetingSubtitle.textContent = 'Analysis complete! Explore summaries, takeaways, questions, and AI chat below.';
+        if (meetingTitle) meetingTitle.innerHTML = `<i class="fa-solid fa-circle-play text-sky-400"></i> ${data.title}`;
+        if (meetingSubtitle) meetingSubtitle.textContent = 'Analysis complete! Explore summaries, takeaways, questions, and AI chat below.';
 
-        summaryContent.textContent = data.summary;
-        actionItemsContent.textContent = data.action_items;
-        keyDecisionsContent.textContent = data.key_decisions;
-        openQuestionsContent.textContent = data.open_questions;
+        if (summaryContent) summaryContent.textContent = data.summary;
+        if (actionItemsContent) actionItemsContent.textContent = data.action_items;
+        if (keyDecisionsContent) keyDecisionsContent.textContent = data.key_decisions;
+        if (openQuestionsContent) openQuestionsContent.textContent = data.open_questions;
 
-        transcriptTextarea.value = data.transcript;
+        if (transcriptTextarea) transcriptTextarea.value = data.transcript;
 
         const words = data.transcript.trim().split(/\s+/).length;
         const chars = data.transcript.length;
-        wordCountBadge.textContent = words.toLocaleString();
-        charCountBadge.textContent = chars.toLocaleString();
+        if (wordCountBadge) wordCountBadge.textContent = words.toLocaleString();
+        if (charCountBadge) charCountBadge.textContent = chars.toLocaleString();
 
         // Reset chat stream with welcome message
-        chatMessages.innerHTML = `
-            <div class="chat-bubble ai bg-slate-900 border border-slate-800 text-slate-200 p-3.5 rounded-2xl max-w-[85%] text-xs leading-relaxed">
-                🤖 I've analyzed <strong>${data.title}</strong>! Ask me any question about the video or audio content.
-            </div>
-        `;
+        if (chatMessages) {
+            chatMessages.innerHTML = `
+                <div class="chat-bubble ai bg-slate-900 border border-slate-800 text-slate-200 p-3.5 rounded-2xl max-w-[85%] text-xs leading-relaxed">
+                    🤖 I've analyzed <strong>${data.title}</strong>! Ask me any question about the video or audio content.
+                </div>
+            `;
+        }
     }
 
     // --- Copy Transcript ---
-    copyTranscriptBtn.addEventListener('click', () => {
-        if (!transcriptTextarea.value) return;
-        navigator.clipboard.writeText(transcriptTextarea.value);
-        copyTranscriptBtn.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i> <span>Copied!</span>`;
-        setTimeout(() => {
-            copyTranscriptBtn.innerHTML = `<i class="fa-solid fa-copy"></i> <span>Copy Transcript</span>`;
-        }, 2000);
-    });
+    if (copyTranscriptBtn && transcriptTextarea) {
+        copyTranscriptBtn.addEventListener('click', () => {
+            if (!transcriptTextarea.value) return;
+            navigator.clipboard.writeText(transcriptTextarea.value);
+            copyTranscriptBtn.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i> <span>Copied!</span>`;
+            setTimeout(() => {
+                copyTranscriptBtn.innerHTML = `<i class="fa-solid fa-copy"></i> <span>Copy Transcript</span>`;
+            }, 2000);
+        });
+    }
 
     // --- AI RAG Chat ---
-    sendChatBtn.addEventListener('click', sendChatMessage);
-    chatInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendChatMessage();
-    });
+    if (sendChatBtn && chatInput) {
+        sendChatBtn.addEventListener('click', sendChatMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendChatMessage();
+        });
+    }
 
     suggestionChips.forEach(chip => {
         chip.addEventListener('click', () => {
-            chatInput.value = chip.textContent.trim();
+            if (chatInput) chatInput.value = chip.textContent.trim();
             sendChatMessage();
         });
     });
 
     async function sendChatMessage() {
+        if (!chatInput) return;
         const question = chatInput.value.trim();
         if (!question) return;
 
@@ -309,6 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function appendChatMessage(role, content) {
+        if (!chatMessages) return;
         const msgId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4);
         const div = document.createElement('div');
         div.id = msgId;
@@ -327,8 +370,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Export Handlers ---
-    exportTxtBtn.addEventListener('click', () => triggerExport('txt'));
-    exportPdfBtn.addEventListener('click', () => triggerExport('pdf'));
+    if (exportTxtBtn) exportTxtBtn.addEventListener('click', () => triggerExport('txt'));
+    if (exportPdfBtn) exportPdfBtn.addEventListener('click', () => triggerExport('pdf'));
 
     async function triggerExport(format) {
         if (!currentResults) {

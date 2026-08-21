@@ -1,11 +1,12 @@
 import os
 import tempfile
 import shutil
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Response
+import uuid
+from typing import Optional, Dict, Any
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Response, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Optional
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -29,8 +30,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Global in-memory storage for current processed session
-session_data = {
+# Global in-memory storage for current session and background jobs
+session_data: Dict[str, Any] = {
     "title": None,
     "transcript": None,
     "summary": None,
@@ -39,6 +40,8 @@ session_data = {
     "open_questions": None,
     "rag_chain": None,
 }
+
+jobs_store: Dict[str, Dict[str, Any]] = {}
 
 
 class ChatRequest(BaseModel):
@@ -64,14 +67,85 @@ def health_check():
     }
 
 
+def _run_background_processing(job_id: str, source: str, language: str, temp_path: Optional[str] = None):
+    try:
+        # Step 1: Extract & Chunk Audio
+        jobs_store[job_id]["status_text"] = "Downloading & extracting audio..."
+        jobs_store[job_id]["percent"] = 20
+        chunks = process_input(source)
+
+        # Step 2: Transcribe
+        jobs_store[job_id]["status_text"] = "Transcribing audio (Speech-to-Text)..."
+        jobs_store[job_id]["percent"] = 50
+
+        def update_progress(msg):
+            jobs_store[job_id]["status_text"] = msg
+
+        transcript = transcribe_all(chunks, language=language, progress_callback=update_progress)
+        if not transcript or not transcript.strip():
+            raise Exception("Failed to extract audio transcript.")
+
+        # Step 3: Title & Executive Summary
+        jobs_store[job_id]["status_text"] = "Generating executive summary & insights..."
+        jobs_store[job_id]["percent"] = 75
+        title = generate_title(transcript)
+        summary = summarize(transcript)
+
+        # Step 4: Extract Insights
+        jobs_store[job_id]["status_text"] = "Extracting action items & key decisions..."
+        jobs_store[job_id]["percent"] = 85
+        action_items = extract_action_items(transcript)
+        decisions = extract_key_decisions(transcript)
+        questions = extract_questions(transcript)
+
+        # Step 5: RAG Vector Indexing
+        jobs_store[job_id]["status_text"] = "Building vector database for AI RAG Chat..."
+        jobs_store[job_id]["percent"] = 95
+        rag_chain = build_rag_chain(transcript)
+
+        # Store in global session
+        session_data["title"] = title
+        session_data["transcript"] = transcript
+        session_data["summary"] = summary
+        session_data["action_items"] = action_items
+        session_data["key_decisions"] = decisions
+        session_data["open_questions"] = questions
+        session_data["rag_chain"] = rag_chain
+
+        result_data = {
+            "title": title,
+            "summary": summary,
+            "action_items": action_items,
+            "key_decisions": decisions,
+            "open_questions": questions,
+            "transcript": transcript,
+        }
+
+        jobs_store[job_id]["status"] = "complete"
+        jobs_store[job_id]["status_text"] = "Processing Complete!"
+        jobs_store[job_id]["percent"] = 100
+        jobs_store[job_id]["result"] = result_data
+
+    except Exception as exc:
+        err_str = str(exc)
+        jobs_store[job_id]["status"] = "failed"
+        jobs_store[job_id]["error"] = err_str
+    finally:
+        if temp_path and os.path.exists(temp_path):
+            try:
+                os.remove(temp_path)
+            except Exception:
+                pass
+
+
 @app.post("/api/process")
 def process_video_or_audio(
+    background_tasks: BackgroundTasks,
     source_type: str = Form(...),  # "youtube" or "file"
     youtube_url: Optional[str] = Form(None),
     language: str = Form("english"),
     file: Optional[UploadFile] = File(None),
 ):
-    # Securely read MISTRAL_API_KEY from backend environment
     if not os.getenv("MISTRAL_API_KEY"):
         raise HTTPException(
             status_code=500,
@@ -81,80 +155,51 @@ def process_video_or_audio(
     temp_path = None
     source = None
 
-    try:
-        if source_type == "youtube":
-            if not youtube_url or not youtube_url.strip():
-                raise HTTPException(status_code=400, detail="YouTube URL is required.")
-            source = youtube_url.strip()
-        elif source_type == "file":
-            if not file:
-                raise HTTPException(status_code=400, detail="No file was uploaded.")
+    if source_type == "youtube":
+        if not youtube_url or not youtube_url.strip():
+            raise HTTPException(status_code=400, detail="YouTube URL is required.")
+        source = youtube_url.strip()
+    elif source_type == "file":
+        if not file:
+            raise HTTPException(status_code=400, detail="No file was uploaded.")
 
-            # Save uploaded file temporarily
-            ext = os.path.splitext(file.filename)[1] or ".mp4"
-            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=ext)
-            shutil.copyfileobj(file.file, temp_file)
-            temp_file.close()
-            temp_path = temp_file.name
-            source = temp_path
-        else:
-            raise HTTPException(status_code=400, detail="Invalid source_type.")
+        ext = os.path.splitext(file.filename)[1] or ".mp4"
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=ext)
+        shutil.copyfileobj(file.file, temp_file)
+        temp_file.close()
+        temp_path = temp_file.name
+        source = temp_path
+    else:
+        raise HTTPException(status_code=400, detail="Invalid source_type.")
 
-        # Step 1: Process Audio & Chunking
-        chunks = process_input(source)
+    job_id = str(uuid.uuid4())
+    jobs_store[job_id] = {
+        "status": "processing",
+        "status_text": "Starting video/audio analysis...",
+        "percent": 10,
+        "result": None,
+        "error": None,
+    }
 
-        # Step 2: Transcribe
-        transcript = transcribe_all(chunks, language=language)
-        if not transcript or not transcript.strip():
-            raise HTTPException(
-                status_code=500, detail="Failed to extract audio transcript."
-            )
+    # Dispatch to background tasks - returns response in 0.05 seconds!
+    background_tasks.add_task(_run_background_processing, job_id, source, language, temp_path)
 
-        # Step 3: Title & Summary
-        title = generate_title(transcript)
-        summary = summarize(transcript)
+    return {"success": True, "job_id": job_id}
 
-        # Step 4: Extract Insights
-        action_items = extract_action_items(transcript)
-        decisions = extract_key_decisions(transcript)
-        questions = extract_questions(transcript)
 
-        # Step 5: RAG Vector Indexing
-        rag_chain = build_rag_chain(transcript)
+@app.get("/api/status/{job_id}")
+def check_job_status(job_id: str):
+    if job_id not in jobs_store:
+        raise HTTPException(status_code=404, detail="Job not found.")
 
-        # Store in global session state
-        session_data["title"] = title
-        session_data["transcript"] = transcript
-        session_data["summary"] = summary
-        session_data["action_items"] = action_items
-        session_data["key_decisions"] = decisions
-        session_data["open_questions"] = questions
-        session_data["rag_chain"] = rag_chain
-
-        return {
-            "success": True,
-            "title": title,
-            "summary": summary,
-            "action_items": action_items,
-            "key_decisions": decisions,
-            "open_questions": questions,
-            "transcript": transcript,
-        }
-
-    except Exception as exc:
-        err_str = str(exc)
-        if "401" in err_str or "Invalid API Key" in err_str:
-            raise HTTPException(
-                status_code=401,
-                detail="Invalid Mistral API Key. Please update your API key in settings.",
-            )
-        raise HTTPException(status_code=500, detail=f"Processing failed: {err_str}")
-    finally:
-        if temp_path and os.path.exists(temp_path):
-            try:
-                os.remove(temp_path)
-            except Exception:
-                pass
+    job = jobs_store[job_id]
+    return {
+        "status": job["status"],
+        "status_text": job["status_text"],
+        "percent": job["percent"],
+        "result": job["result"],
+        "error": job["error"],
+    }
 
 
 @app.post("/api/chat")
@@ -168,7 +213,6 @@ def chat_with_meeting(req: ChatRequest):
         raise HTTPException(status_code=400, detail="Question cannot be empty.")
 
     try:
-        # Re-build RAG chain dynamically to guarantee fresh context
         rag_chain = build_rag_chain(session_data["transcript"])
         answer = ask_question(rag_chain, req.question.strip())
         return {"success": True, "answer": answer}
