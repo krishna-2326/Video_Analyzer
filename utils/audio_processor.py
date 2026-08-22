@@ -42,7 +42,43 @@ def _auth_attempts() -> list[tuple[str, dict]]:
     cookie_file = os.getenv("YTDLP_COOKIE_FILE", "").strip()
     visitor_data = os.getenv("YTDLP_VISITOR_DATA", "").strip()
 
-    attempts: list[tuple[str, dict]] = [("no_auth", {})]
+    # Automatically check if cookies.txt exists in project root
+    if not cookie_file and os.path.exists("cookies.txt"):
+        cookie_file = "cookies.txt"
+
+    attempts: list[tuple[str, dict]] = [
+        (
+            "android_client",
+            {
+                "extractor_args": {
+                    "youtube": {
+                        "player_client": ["android", "ios"],
+                        "player_skip": ["configs"],
+                    }
+                }
+            },
+        ),
+        (
+            "mweb_client",
+            {
+                "extractor_args": {
+                    "youtube": {
+                        "player_client": ["mweb", "web"],
+                    }
+                }
+            },
+        ),
+        (
+            "tvhtml5_client",
+            {
+                "extractor_args": {
+                    "youtube": {
+                        "player_client": ["tvhtml5"],
+                    }
+                }
+            },
+        ),
+    ]
 
     if visitor_data:
         attempts.append((
@@ -80,10 +116,14 @@ def _build_ydl_opts(output_path: str, auth_overrides: dict) -> dict:
             }
         ],
         "quiet": True,
-        "retries": 2,
-        "fragment_retries": 2,
+        "retries": 3,
+        "fragment_retries": 3,
         "sleep_interval_requests": 1,
         "remote_components": ["ejs:github"],
+        "http_headers": {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+            "Accept-Language": "en-US,en;q=0.9",
+        },
     }
     if js_runtimes:
         ydl_opts["js_runtimes"] = {runtime: {} for runtime in js_runtimes}
