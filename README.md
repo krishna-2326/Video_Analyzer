@@ -14,7 +14,10 @@
 
 ## ✨ Features
 
-- **🔗 Dual Input Options**: Process YouTube URLs (videos, shorts, livestreams) or drag-and-drop local media files.
+> [!NOTE]
+> **Cloud Deployment & YouTube Bot Detection**: YouTube aggressively blocks datacenter IP addresses (Render, AWS, GCP). YouTube URL processing works best in local development or with a proxy configured (`YTDLP_PROXY`). For cloud hosting deployments, direct **File Upload** (`.mp4`, `.mp3`, `.wav`, `.m4a`) is the recommended, 100% reliable production path.
+
+- **🔗 Dual Input Options**: Process YouTube URLs (videos, shorts, podcasts) or drag-and-drop local media files.
 - **🎙️ Dual STT Engines**: Local **OpenAI Whisper** (English) and **Sarvam AI** (Hinglish/Hindi audio translation).
 - **📝 General-Purpose AI Insights**: Generates executive summaries, practical steps/recommendations, key decisions/findings, and open questions/topics.
 - **💬 Interactive RAG Vector Chat**: Ask any question about the video content; answers are retrieved from a Chroma vector store via **Mistral AI**.

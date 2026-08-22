@@ -125,6 +125,12 @@ def _build_ydl_opts(output_path: str, auth_overrides: dict) -> dict:
             "Accept-Language": "en-US,en;q=0.9",
         },
     }
+
+    # Optional proxy hook from environment
+    proxy = os.getenv("YTDLP_PROXY", "").strip()
+    if proxy:
+        ydl_opts["proxy"] = proxy
+
     if js_runtimes:
         ydl_opts["js_runtimes"] = {runtime: {} for runtime in js_runtimes}
     ydl_opts.update(auth_overrides)
@@ -215,45 +221,3 @@ def process_input(source: str) -> list:
     chunks = chunk_audio(wav_path)
     print(f"Audio ready — {len(chunks)} chunk(s) created.")
     return chunks
-
-
-def _looks_like_youtube_url(text: str) -> bool:
-    text = text.strip()
-    return text.startswith(("http://", "https://")) and (
-        "youtube.com" in text or "youtu.be" in text
-    )
-
-
-def watch_clipboard(poll_interval: float = 1.0) -> None:
-    """
-    Polls the clipboard. Whenever a NEW value is copied that looks like a
-    YouTube link, automatically runs process_input on it -- no manual
-    running of the script or pressing enter needed.
-    """
-    print("Watching clipboard for YouTube links... (Ctrl+C to stop)")
-    last_seen = None
-
-    while True:
-        try:
-            import pyperclip
-            current = pyperclip.paste()
-        except Exception as exc:
-            print(f"Clipboard read failed: {exc}")
-            time.sleep(poll_interval)
-            continue
-
-        if current != last_seen:
-            last_seen = current
-            if _looks_like_youtube_url(current):
-                print(f"\nDetected YouTube link: {current}")
-                try:
-                    process_input(current.strip())
-                except Exception as exc:
-                    print(f"Failed to process link: {exc}")
-                print("Watching clipboard for YouTube links... (Ctrl+C to stop)")
-
-        time.sleep(poll_interval)
-
-
-if __name__ == "__main__":
-    watch_clipboard()

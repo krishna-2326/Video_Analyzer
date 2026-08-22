@@ -1,344 +1,231 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Video & Media Agent</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            400: '#38bdf8',
-                            500: '#0284c7',
-                            600: '#0284c7',
-                            700: '#0369a1',
-                        },
-                        dark: {
-                            bg: '#070A11',
-                            card: '#0F172A',
-                            border: '#1E293B',
-                            hover: '#182238'
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- FontAwesome 6 Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>VideoIntel AI Studio</title>
     <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Apple Style CSS -->
     <link rel="stylesheet" href="/style.css">
 </head>
-<body class="bg-[#070A11] text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-sky-500 selection:text-white">
+<body>
 
-    <!-- Top Navigation Header -->
-    <header class="border-b border-slate-800/80 bg-[#070A11]/80 backdrop-blur-xl sticky top-0 z-50 shadow-2xl">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <!-- Brand Logo -->
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 via-indigo-600 to-purple-600 flex items-center justify-center shadow-lg shadow-sky-500/20 ring-1 ring-white/20">
-                    <i class="fa-solid fa-bolt text-white text-lg"></i>
-                </div>
-                <div>
-                    <h1 class="text-base font-extrabold bg-gradient-to-r from-sky-400 via-indigo-300 to-purple-300 bg-clip-text text-transparent tracking-tight">AI Video & Media Agent</h1>
-                    <p class="text-[11px] text-slate-400 font-medium">Smart Summaries, Key Takeaways & Interactive RAG Intelligence</p>
-                </div>
-            </div>
-
-            <!-- Server Status Indicator -->
-            <div class="flex items-center gap-3">
-                <div class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800/80 flex items-center gap-2 shadow-inner">
-                    <span class="relative flex h-2 w-2">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </span>
-                    <span>FastAPI Server Active</span>
-                </div>
+    <!-- Header Navigation -->
+    <header class="apple-header">
+        <div class="apple-header-inner">
+            <a href="/" class="apple-brand">
+                <span class="apple-brand-name">VideoIntel AI</span>
+            </a>
+            <div class="apple-status-badge">
+                <span class="status-dot"></span>
+                <span>FastAPI Active</span>
             </div>
         </div>
     </header>
 
     <!-- Main Workspace -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <main class="apple-container">
+        
+        <!-- Hero Title Section -->
+        <section class="apple-hero">
+            <h1 class="apple-hero-title">Video Intelligence Studio</h1>
+            <p class="apple-subtitle">Transform video content and audio recordings into executive summaries, key decisions, and interactive AI chat.</p>
+        </section>
+
+        <!-- 2 Column Workspace Layout -->
+        <div class="apple-grid">
             
-            <!-- Left Controls Sidebar (4 Columns) -->
-            <div class="lg:col-span-4 space-y-6">
+            <!-- Left Panel: Content Source Controls -->
+            <div class="apple-card">
                 
-                <!-- Input Panel Card -->
-                <div class="bg-[#0F172A]/90 border border-slate-800 rounded-2xl p-6 shadow-2xl backdrop-blur-xl relative overflow-hidden group">
-                    <div class="absolute -top-24 -left-24 w-48 h-48 bg-sky-500/10 rounded-full blur-3xl group-hover:bg-sky-500/20 transition-all"></div>
-                    
-                    <h2 class="text-xs font-bold text-slate-300 uppercase tracking-widest mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-sliders text-sky-400"></i>
-                        Select Content Source
-                    </h2>
-
-                    <!-- Source Selector Switcher -->
-                    <div class="grid grid-cols-2 p-1.5 bg-slate-950/80 rounded-xl border border-slate-800 mb-5">
-                        <button id="source-yt-btn" class="source-tab active text-xs font-bold py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-md">
-                            <i class="fa-brands fa-youtube text-red-400 text-sm"></i>
-                            YouTube URL
-                        </button>
-                        <button id="source-file-btn" class="source-tab text-xs font-bold py-2.5 rounded-lg text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-cloud-arrow-up text-amber-400 text-sm"></i>
-                            File Upload
-                        </button>
-                    </div>
-
-                    <!-- YouTube Input View -->
-                    <div id="youtube-input-section" class="space-y-2">
-                        <label class="block text-xs font-semibold text-slate-300">YouTube Video Link</label>
-                        <div class="relative">
-                            <input type="url" id="youtube-url-input" placeholder="https://www.youtube.com/watch?v=..." class="w-full bg-slate-950/90 border border-slate-800 rounded-xl px-3.5 py-3 pl-10 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all">
-                            <i class="fa-brands fa-youtube absolute left-3.5 top-3.5 text-slate-500"></i>
-                        </div>
-                        <p class="text-[11px] text-slate-400">Supports standard videos, shorts, podcasts, and livestreams.</p>
-                    </div>
-
-                    <!-- File Upload View -->
-                    <div id="file-input-section" class="hidden space-y-2">
-                        <label class="block text-xs font-semibold text-slate-300">Upload Media File</label>
-                        <div id="drop-zone" class="border-2 border-dashed border-slate-800 hover:border-sky-500/60 rounded-xl p-6 text-center cursor-pointer transition-all bg-slate-950/50 hover:bg-slate-950/80 group">
-                            <div class="w-12 h-12 rounded-xl bg-slate-900 border border-slate-800 text-sky-400 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                                <i class="fa-solid fa-file-audio text-xl"></i>
-                            </div>
-                            <p class="text-xs text-slate-200 font-semibold">Click or drag & drop media file</p>
-                            <p class="text-[11px] text-slate-400 mt-1">MP4, MP3, WAV, M4A, MKV</p>
-                            <input type="file" id="file-upload-input" accept="audio/*,video/*" class="hidden">
-                        </div>
-                        <div id="file-info" class="hidden text-xs text-sky-300 font-semibold bg-sky-950/60 border border-sky-800/80 rounded-xl p-3 flex items-center justify-between">
-                            <div class="flex items-center gap-2 truncate">
-                                <i class="fa-solid fa-file-video text-sky-400"></i>
-                                <span id="file-name" class="truncate">filename.mp4</span>
-                            </div>
-                            <button id="remove-file" class="text-slate-400 hover:text-red-400 transition-colors p-1">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Language Selection -->
-                    <div class="mt-5 space-y-2">
-                        <label class="block text-xs font-semibold text-slate-300">Transcription Engine / Language</label>
-                        <div class="relative">
-                            <select id="language-select" class="w-full bg-slate-950/90 border border-slate-800 rounded-xl px-3.5 py-3 text-sm text-slate-200 focus:outline-none focus:border-sky-500 appearance-none">
-                                <option value="english">🇺🇸 English (Local OpenAI Whisper)</option>
-                                <option value="hinglish">🇮🇳 Hinglish / Hindi (Sarvam AI API)</option>
-                            </select>
-                            <i class="fa-solid fa-chevron-down absolute right-3.5 top-4 text-xs text-slate-500 pointer-events-none"></i>
-                        </div>
-                    </div>
-
-                    <!-- Process CTA Button -->
-                    <button id="process-btn" class="w-full mt-6 bg-gradient-to-r from-sky-600 via-indigo-600 to-purple-600 hover:from-sky-500 hover:to-purple-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-xl shadow-sky-600/25 flex items-center justify-center gap-2 group text-sm tracking-wide">
-                        <i class="fa-solid fa-sparkles text-amber-300 group-hover:rotate-12 transition-transform"></i>
-                        <span>Process & Analyze</span>
-                    </button>
+                <div class="apple-segmented-control">
+                    <button id="source-yt-btn" class="source-tab active">YouTube URL</button>
+                    <button id="source-file-btn" class="source-tab">Upload File</button>
                 </div>
 
-                <!-- Live Progress Box -->
-                <div id="progress-card" class="hidden bg-[#0F172A] border border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl">
-                    <div class="flex items-center justify-between text-xs font-bold text-sky-400">
-                        <span id="progress-status-text" class="flex items-center gap-2">
-                            <i class="fa-solid fa-spinner animate-spin"></i>
-                            Processing video & extracting audio...
-                        </span>
-                        <span id="progress-percentage" class="text-slate-400">0%</span>
+                <!-- YouTube Input Section -->
+                <div id="youtube-input-section" class="apple-input-group">
+                    <label class="apple-label" for="youtube-url-input">YouTube Link</label>
+                    <input type="url" id="youtube-url-input" class="apple-input" placeholder="https://www.youtube.com/watch?v=...">
+                    <p class="apple-label" style="font-size: 12px; margin-top: 4px;">Note: YouTube links run best on local environment; for cloud deploys use Upload File if YouTube blocks cloud IPs.</p>
+                </div>
+
+                <!-- File Input Section -->
+                <div id="file-input-section" class="apple-input-group hidden">
+                    <label class="apple-label">Audio or Video File</label>
+                    <div id="drop-zone" class="apple-drop-zone">
+                        <div class="apple-drop-icon">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                        </div>
+                        <p style="font-size: 14px; font-weight: 500; color: var(--text-primary);">Choose a media file or drag it here</p>
+                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">MP4, MP3, WAV, M4A, MKV</p>
+                        <input type="file" id="file-upload-input" accept="audio/*,video/*" style="display: none;">
                     </div>
                     
-                    <div class="w-full bg-slate-950 rounded-full h-2.5 overflow-hidden border border-slate-800/80 p-0.5">
-                        <div id="progress-bar-fill" class="bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-500 h-full rounded-full w-0 transition-all duration-500 shadow-md"></div>
+                    <div id="file-info" class="hidden" style="padding: 12px 16px; background: #EFEFF4; border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
+                        <span id="file-name" style="font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">filename.mp4</span>
+                        <button id="remove-file" style="background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 4px;">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Language Selector -->
+                <div class="apple-input-group">
+                    <label class="apple-label" for="language-select">Audio Language</label>
+                    <select id="language-select" class="apple-input apple-select">
+                        <option value="english">English (OpenAI Whisper)</option>
+                        <option value="hinglish">Hindi / Hinglish (Sarvam AI)</option>
+                    </select>
+                </div>
+
+                <!-- Process Action Button -->
+                <button id="process-btn" class="apple-btn-primary">
+                    <span>Process & Analyze</span>
+                </button>
+
+                <!-- Processing Circular Progress Ring -->
+                <div id="progress-card" class="apple-progress-card hidden">
+                    <div class="progress-ring-container">
+                        <svg class="progress-ring-svg" width="120" height="120">
+                            <circle class="progress-ring-bg" cx="60" cy="60" r="50" fill="transparent"></circle>
+                            <circle id="progress-ring-circle" class="progress-ring-circle" cx="60" cy="60" r="50" fill="transparent" stroke-dasharray="314.159" stroke-dashoffset="314.159"></circle>
+                        </svg>
+                        <div id="progress-percentage" class="progress-ring-text">0%</div>
                     </div>
                     
-                    <div class="grid grid-cols-4 gap-1 text-[10px] text-slate-400 text-center font-medium pt-1">
-                        <span id="step-1-badge" class="text-sky-400 font-bold">1. Extract</span>
+                    <!-- Backwards compatible hidden fill element -->
+                    <div id="progress-bar-fill" style="display: none;"></div>
+
+                    <div id="progress-status-text" class="progress-status-label">Starting analysis...</div>
+
+                    <div style="display: flex; gap: 8px; font-size: 11px; color: var(--text-tertiary); margin-top: 4px;">
+                        <span id="step-1-badge">1. Extract</span>
+                        <span>•</span>
                         <span id="step-2-badge">2. Transcribe</span>
+                        <span>•</span>
                         <span id="step-3-badge">3. Summarize</span>
+                        <span>•</span>
                         <span id="step-4-badge">4. Vector Index</span>
                     </div>
                 </div>
 
             </div>
 
-            <!-- Right Content Output Area (8 Columns) -->
-            <div class="lg:col-span-8">
-                <div class="bg-[#0F172A]/90 border border-slate-800 rounded-2xl shadow-2xl backdrop-blur-xl min-h-[620px] flex flex-col overflow-hidden">
+            <!-- Right Panel: Intelligence Dashboard Outputs -->
+            <div class="apple-card">
+                
+                <!-- Output Banner Title -->
+                <div style="margin-bottom: 24px;">
+                    <h2 id="meeting-title" class="apple-section-title">Analysis Results</h2>
+                    <p id="meeting-subtitle" class="apple-subtitle" style="font-size: 14px; margin-top: 4px;">Process a video or upload an audio file to view insights.</p>
+                </div>
+
+                <!-- Tab Navigation Bar -->
+                <div class="apple-tabs-bar">
+                    <button class="main-tab active" data-tab="summary">Summary & Takeaways</button>
+                    <button class="main-tab" data-tab="chat">Interactive AI Chat</button>
+                    <button class="main-tab" data-tab="transcript">Full Transcript</button>
+                    <button class="main-tab" data-tab="export">Export Reports</button>
+                </div>
+
+                <!-- TAB 1: SUMMARY & INSIGHTS -->
+                <div id="tab-summary" class="tab-content active">
                     
-                    <!-- Output Banner Header -->
-                    <div class="p-6 border-b border-slate-800 bg-gradient-to-r from-slate-900/80 via-[#0F172A] to-slate-900/80">
-                        <h2 id="meeting-title" class="text-lg font-bold text-slate-100 flex items-center gap-2.5">
-                            <i class="fa-solid fa-circle-play text-sky-400"></i>
-                            <span>AI Content Intelligence Dashboard</span>
-                        </h2>
-                        <p id="meeting-subtitle" class="text-xs text-slate-400 mt-1">Select a video or upload audio on the left to extract structured takeaways and chat with the content.</p>
+                    <div class="apple-summary-block">
+                        <h3 class="apple-label" style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;">Executive Summary</h3>
+                        <div id="summary-content" class="apple-summary-text">
+                            No analysis performed yet. Select a YouTube URL or file upload to begin.
+                        </div>
                     </div>
 
-                    <!-- Tab Navigation Bar -->
-                    <div class="px-6 pt-3 border-b border-slate-800/80 flex gap-2 overflow-x-auto bg-slate-950/60">
-                        <button class="main-tab active text-xs font-bold px-4 py-3 rounded-t-xl text-sky-400 border-b-2 border-sky-500 transition-all flex items-center gap-2" data-tab="summary">
-                            <i class="fa-solid fa-chart-pie"></i>
-                            Summary & Takeaways
-                        </button>
-                        <button class="main-tab text-xs font-bold px-4 py-3 rounded-t-xl text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition-all flex items-center gap-2" data-tab="chat">
-                            <i class="fa-solid fa-comments"></i>
-                            Interactive AI Chat
-                        </button>
-                        <button class="main-tab text-xs font-bold px-4 py-3 rounded-t-xl text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition-all flex items-center gap-2" data-tab="transcript">
-                            <i class="fa-solid fa-quote-left"></i>
-                            Full Transcript
-                        </button>
-                        <button class="main-tab text-xs font-bold px-4 py-3 rounded-t-xl text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition-all flex items-center gap-2" data-tab="export">
-                            <i class="fa-solid fa-file-arrow-down"></i>
-                            Export Reports
-                        </button>
-                    </div>
-
-                    <!-- Tab Panels Body -->
-                    <div class="p-6 flex-grow flex flex-col">
+                    <!-- 3 Column Insights Grid (Exact existing copy preserved) -->
+                    <div class="apple-insights-grid">
                         
-                        <!-- TAB 1: SUMMARY & INSIGHTS -->
-                        <div id="tab-summary" class="tab-content active space-y-6">
-                            
-                            <!-- Executive Summary Card -->
-                            <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-5 shadow-inner">
-                                <h3 class="text-xs font-bold text-sky-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                    <i class="fa-solid fa-align-left"></i>
-                                    Executive Summary
-                                </h3>
-                                <div id="summary-content" class="text-xs text-slate-300 leading-relaxed whitespace-pre-line">
-                                    No summary generated yet. Process a video or audio file to view key bullet points and takeaways.
-                                </div>
-                            </div>
-
-                            <!-- 3 Column Insights Grid -->
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                
-                                <!-- Action Items / Recommendations -->
-                                <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-4 flex flex-col shadow-inner">
-                                    <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                        <i class="fa-solid fa-circle-check"></i>
-                                        Practical Steps & Tips
-                                    </h4>
-                                    <div id="action-items-content" class="text-xs text-slate-300 leading-relaxed whitespace-pre-line overflow-y-auto max-h-56">
-                                        Awaiting input...
-                                    </div>
-                                </div>
-
-                                <!-- Key Decisions / Conclusions -->
-                                <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-4 flex flex-col shadow-inner">
-                                    <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                        <i class="fa-solid fa-key"></i>
-                                        Key Decisions & Findings
-                                    </h4>
-                                    <div id="key-decisions-content" class="text-xs text-slate-300 leading-relaxed whitespace-pre-line overflow-y-auto max-h-56">
-                                        Awaiting input...
-                                    </div>
-                                </div>
-
-                                <!-- Open Questions / Topics -->
-                                <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-4 flex flex-col shadow-inner">
-                                    <h4 class="text-xs font-bold text-purple-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                        <i class="fa-solid fa-circle-question"></i>
-                                        Key Topics & Questions
-                                    </h4>
-                                    <div id="open-questions-content" class="text-xs text-slate-300 leading-relaxed whitespace-pre-line overflow-y-auto max-h-56">
-                                        Awaiting input...
-                                    </div>
-                                </div>
-
+                        <!-- Column 1: Practical Steps -->
+                        <div class="apple-insight-card">
+                            <h4 class="apple-insight-title">Practical Steps</h4>
+                            <div id="action-items-content" class="apple-insight-body">
+                                Awaiting analysis...
                             </div>
                         </div>
 
-                        <!-- TAB 2: INTERACTIVE AI CHAT -->
-                        <div id="tab-chat" class="tab-content hidden flex-grow flex flex-col space-y-4">
-                            
-                            <!-- Suggestion Chips Bar -->
-                            <div class="flex flex-wrap gap-2">
-                                <button class="suggestion-chip text-xs bg-slate-950 border border-slate-800 hover:border-sky-500 text-slate-300 hover:text-white px-3 py-1.5 rounded-full transition-all">
-                                    Summarize the main topic
-                                </button>
-                                <button class="suggestion-chip text-xs bg-slate-950 border border-slate-800 hover:border-sky-500 text-slate-300 hover:text-white px-3 py-1.5 rounded-full transition-all">
-                                    What are the key recommendations?
-                                </button>
-                                <button class="suggestion-chip text-xs bg-slate-950 border border-slate-800 hover:border-sky-500 text-slate-300 hover:text-white px-3 py-1.5 rounded-full transition-all">
-                                    Explain the conclusions mentioned
-                                </button>
-                            </div>
-
-                            <!-- Chat Stream Box -->
-                            <div id="chat-messages" class="flex-grow min-h-[360px] max-h-[440px] overflow-y-auto space-y-3 p-4 bg-slate-950/80 border border-slate-800 rounded-xl shadow-inner">
-                                <div class="chat-bubble ai bg-slate-900 border border-slate-800 text-slate-200 p-3.5 rounded-2xl max-w-[85%] text-xs leading-relaxed">
-                                    🤖 Hello! Process a video or audio file to start chatting with the content.
-                                </div>
-                            </div>
-
-                            <!-- Chat Input Form -->
-                            <div class="flex items-center gap-2">
-                                <input type="text" id="chat-input" placeholder="Ask any question about this video/audio content..." class="flex-grow bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 transition-all">
-                                <button id="send-chat-btn" class="bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-semibold px-5 py-3 rounded-xl transition-all text-xs flex items-center gap-2 shadow-lg shadow-sky-600/20">
-                                    <i class="fa-solid fa-paper-plane"></i>
-                                    <span>Send</span>
-                                </button>
+                        <!-- Column 2: Key Decisions -->
+                        <div class="apple-insight-card">
+                            <h4 class="apple-insight-title">Key Decisions</h4>
+                            <div id="key-decisions-content" class="apple-insight-body">
+                                Awaiting analysis...
                             </div>
                         </div>
 
-                        <!-- TAB 3: FULL TRANSCRIPT -->
-                        <div id="tab-transcript" class="tab-content hidden space-y-4">
-                            <div class="flex items-center justify-between bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3">
-                                <div class="text-xs text-slate-400 flex items-center gap-4">
-                                    <span>📊 Words: <strong id="word-count-badge" class="text-slate-200">0</strong></span>
-                                    <span>Chars: <strong id="char-count-badge" class="text-slate-200">0</strong></span>
-                                </div>
-                                <button id="copy-transcript-btn" class="text-xs text-sky-400 hover:text-sky-300 font-semibold flex items-center gap-1.5 bg-sky-950/60 border border-sky-800/80 px-3 py-1.5 rounded-lg transition-colors">
-                                    <i class="fa-solid fa-copy"></i>
-                                    <span>Copy Transcript</span>
-                                </button>
-                            </div>
-                            <textarea id="transcript-textarea" readonly class="w-full h-[400px] bg-slate-950/90 border border-slate-800 rounded-xl p-4 text-xs font-mono text-slate-300 focus:outline-none leading-relaxed resize-none" placeholder="Transcript text will appear here..."></textarea>
-                        </div>
-
-                        <!-- TAB 4: EXPORT REPORTS -->
-                        <div id="tab-export" class="tab-content hidden space-y-6">
-                            <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-8 text-center space-y-4 max-w-xl mx-auto my-8 shadow-xl">
-                                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center mx-auto text-2xl shadow-lg shadow-sky-500/20">
-                                    <i class="fa-solid fa-file-export"></i>
-                                </div>
-                                <h3 class="text-base font-bold text-slate-100">Export Analysis Package</h3>
-                                <p class="text-xs text-slate-400 leading-relaxed">Download a complete structured report containing the executive summary, practical takeaways, decisions, topics, and full transcript.</p>
-                                
-                                <div class="grid grid-cols-2 gap-4 pt-4">
-                                    <button id="export-txt-btn" class="bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold py-3.5 rounded-xl transition-all text-xs flex items-center justify-center gap-2 shadow-md">
-                                        <i class="fa-solid fa-file-lines text-slate-400"></i>
-                                        Download TXT
-                                    </button>
-                                    <button id="export-pdf-btn" class="bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-semibold py-3.5 rounded-xl transition-all text-xs flex items-center justify-center gap-2 shadow-lg shadow-sky-600/25">
-                                        <i class="fa-solid fa-file-pdf text-red-300"></i>
-                                        Download PDF
-                                    </button>
-                                </div>
+                        <!-- Column 3: Topics & Questions -->
+                        <div class="apple-insight-card">
+                            <h4 class="apple-insight-title">Topics & Questions</h4>
+                            <div id="open-questions-content" class="apple-insight-body">
+                                Awaiting analysis...
                             </div>
                         </div>
 
                     </div>
                 </div>
+
+                <!-- TAB 2: INTERACTIVE AI CHAT -->
+                <div id="tab-chat" class="tab-content hidden">
+                    
+                    <div class="suggestion-chips-bar">
+                        <button class="suggestion-chip">Summarize the main topic</button>
+                        <button class="suggestion-chip">What are the key recommendations?</button>
+                        <button class="suggestion-chip">Explain the conclusions mentioned</button>
+                    </div>
+
+                    <div id="chat-messages" class="chat-stream-box">
+                        <div class="chat-bubble ai">
+                            Process a video or audio file to start asking questions about the content.
+                        </div>
+                    </div>
+
+                    <div class="chat-input-row">
+                        <input type="text" id="chat-input" class="apple-input" placeholder="Ask any question about this video or audio content...">
+                        <button id="send-chat-btn" class="apple-btn-primary" style="width: auto; padding: 14px 28px;">Send</button>
+                    </div>
+                </div>
+
+                <!-- TAB 3: FULL TRANSCRIPT -->
+                <div id="tab-transcript" class="tab-content hidden">
+                    <div class="transcript-meta-bar">
+                        <div>
+                            Words: <strong id="word-count-badge" style="color: var(--text-primary);">0</strong> &nbsp;•&nbsp;
+                            Characters: <strong id="char-count-badge" style="color: var(--text-primary);">0</strong>
+                        </div>
+                        <button id="copy-transcript-btn" class="apple-btn-secondary" style="padding: 6px 14px; font-size: 13px;">Copy Transcript</button>
+                    </div>
+                    <textarea id="transcript-textarea" readonly class="apple-textarea" placeholder="Transcript text will appear here..."></textarea>
+                </div>
+
+                <!-- TAB 4: EXPORT REPORTS -->
+                <div id="tab-export" class="tab-content hidden">
+                    <div class="export-card-box">
+                        <h3 class="apple-section-title">Download Export Package</h3>
+                        <p class="apple-subtitle" style="font-size: 14px;">Download a complete report containing the executive summary, practical takeaways, key decisions, topics, and full transcript.</p>
+                        
+                        <div class="export-btn-group">
+                            <button id="export-txt-btn" class="apple-btn-secondary" style="padding: 16px;">Download TXT</button>
+                            <button id="export-pdf-btn" class="apple-btn-primary" style="padding: 16px;">Download PDF</button>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
         </div>
     </main>
 
-    <!-- Footer Bar -->
-    <footer class="border-t border-slate-800/80 py-4 text-center text-xs text-slate-500 bg-[#070A11]">
-        AI Video Agent &copy; 2026 — Powered by FastAPI, OpenAI Whisper, Mistral AI & Chroma Vector DB
+    <!-- Footer -->
+    <footer class="apple-footer">
+        VideoIntel AI Studio &copy; 2026 — Built with FastAPI, OpenAI Whisper, Mistral AI & Chroma Vector DB
     </footer>
 
     <!-- App JS -->

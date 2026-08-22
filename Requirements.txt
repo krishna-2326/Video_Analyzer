@@ -50,4 +50,3 @@ python-dotenv>=1.0.0              # Load API keys from .env
 numpy>=1.26.0
 tqdm>=4.66.0                      # Progress bars
 requests>=2.32.0
-pyperclip>=1.8.2                  # Cross-platform clipboard utility

@@ -6,7 +6,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentResults = null;
     let pollTimer = null;
 
-    // DOM Elements
+    // SVG Circular Progress Ring constants (r=50, circumference = 2 * PI * 50 = 314.159)
+    const RING_CIRCUMFERENCE = 314.159;
+
+    // DOM Element Lookups
     const sourceYtBtn = document.getElementById('source-yt-btn');
     const sourceFileBtn = document.getElementById('source-file-btn');
     const ytSection = document.getElementById('youtube-input-section');
@@ -25,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressStatusText = document.getElementById('progress-status-text');
     const progressBarFill = document.getElementById('progress-bar-fill');
     const progressPercentage = document.getElementById('progress-percentage');
+    const progressRingCircle = document.getElementById('progress-ring-circle');
 
     const step1Badge = document.getElementById('step-1-badge');
     const step2Badge = document.getElementById('step-2-badge');
@@ -62,12 +66,8 @@ document.addEventListener('DOMContentLoaded', () => {
         tab.addEventListener('click', () => {
             const target = tab.getAttribute('data-tab');
 
-            mainTabs.forEach(t => {
-                t.classList.remove('active', 'text-sky-400', 'border-sky-500');
-                t.classList.add('text-slate-400', 'border-transparent');
-            });
-            tab.classList.add('active', 'text-sky-400', 'border-sky-500');
-            tab.classList.remove('text-slate-400', 'border-transparent');
+            mainTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
 
             tabContents.forEach(content => {
                 if (content.id === `tab-${target}`) {
@@ -85,20 +85,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sourceYtBtn && sourceFileBtn) {
         sourceYtBtn.addEventListener('click', () => {
             currentSourceType = 'youtube';
-            sourceYtBtn.classList.add('bg-gradient-to-r', 'from-sky-600', 'to-indigo-600', 'text-white', 'shadow-md');
-            sourceYtBtn.classList.remove('text-slate-400');
-            sourceFileBtn.classList.remove('bg-gradient-to-r', 'from-sky-600', 'to-indigo-600', 'text-white', 'shadow-md');
-            sourceFileBtn.classList.add('text-slate-400');
+            sourceYtBtn.classList.add('active');
+            sourceFileBtn.classList.remove('active');
             if (ytSection) ytSection.classList.remove('hidden');
             if (fileSection) fileSection.classList.add('hidden');
         });
 
         sourceFileBtn.addEventListener('click', () => {
             currentSourceType = 'file';
-            sourceFileBtn.classList.add('bg-gradient-to-r', 'from-sky-600', 'to-indigo-600', 'text-white', 'shadow-md');
-            sourceFileBtn.classList.remove('text-slate-400');
-            sourceYtBtn.classList.remove('bg-gradient-to-r', 'from-sky-600', 'to-indigo-600', 'text-white', 'shadow-md');
-            sourceYtBtn.classList.add('text-slate-400');
+            sourceFileBtn.classList.add('active');
+            sourceYtBtn.classList.remove('active');
             if (fileSection) fileSection.classList.remove('hidden');
             if (ytSection) ytSection.classList.add('hidden');
         });
@@ -110,16 +106,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
-            dropZone.classList.add('border-sky-500');
+            dropZone.style.borderColor = 'var(--text-primary)';
         });
 
         dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('border-sky-500');
+            dropZone.style.borderColor = 'var(--border-subtle)';
         });
 
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
-            dropZone.classList.remove('border-sky-500');
+            dropZone.style.borderColor = 'var(--border-subtle)';
             if (e.dataTransfer.files.length > 0) {
                 handleFileSelect(e.dataTransfer.files[0]);
             }
@@ -172,7 +168,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Show progress UI
             processBtn.disabled = true;
-            processBtn.classList.add('opacity-50', 'cursor-not-allowed');
             if (progressCard) progressCard.classList.remove('hidden');
             
             updateProgressUI('Starting video/audio analysis...', 10);
@@ -192,14 +187,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const jobId = data.job_id;
 
-                // Start smooth status polling every 1.5 seconds
+                // Start status polling every 1.5 seconds
                 pollJobStatus(jobId);
 
             } catch (err) {
-                alert(`⚠️ Error: ${err.message}`);
-                if (progressCard) progressCard.classList.add('hidden');
-                processBtn.disabled = false;
-                processBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                handleProcessingError(err.message);
             }
         });
     }
@@ -224,18 +216,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     currentResults = data.result;
                     renderResults(data.result);
                     setTimeout(() => { if (progressCard) progressCard.classList.add('hidden'); }, 1500);
-                    if (processBtn) {
-                        processBtn.disabled = false;
-                        processBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    }
+                    if (processBtn) processBtn.disabled = false;
                 } else if (data.status === 'failed') {
                     clearInterval(pollTimer);
-                    alert(`⚠️ Processing failed: ${data.error}`);
-                    if (progressCard) progressCard.classList.add('hidden');
-                    if (processBtn) {
-                        processBtn.disabled = false;
-                        processBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    }
+                    handleProcessingError(data.error);
                 }
 
             } catch (err) {
@@ -244,21 +228,47 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1500);
     }
 
+    function handleProcessingError(errorMsg) {
+        if (progressCard) progressCard.classList.add('hidden');
+        if (processBtn) processBtn.disabled = false;
+
+        const isBotCheck = errorMsg.includes('Sign in to confirm') || 
+                           errorMsg.includes('bot') || 
+                           errorMsg.includes('auth') || 
+                           errorMsg.includes('YouTube download failed') ||
+                           errorMsg.includes('429');
+
+        if (isBotCheck && currentSourceType === 'youtube') {
+            alert('💡 YouTube URL downloading was restricted by YouTube bot detection on cloud hosting.\n\nPlease click "Upload File" instead to upload your video/audio file directly for fast, 100% reliable processing!');
+            if (sourceFileBtn) sourceFileBtn.click();
+        } else {
+            alert(`⚠️ Error: ${errorMsg}`);
+        }
+    }
+
     function updateProgressUI(statusText, percent) {
-        if (progressStatusText) progressStatusText.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> ${statusText}`;
-        if (progressBarFill) progressBarFill.style.width = `${percent}%`;
+        if (progressStatusText) progressStatusText.textContent = statusText;
         if (progressPercentage) progressPercentage.textContent = `${percent}%`;
 
-        // Highlight step badges based on percentage
-        if (step1Badge && percent >= 20) step1Badge.className = 'text-sky-400 font-bold';
-        if (step2Badge && percent >= 50) step2Badge.className = 'text-sky-400 font-bold';
-        if (step3Badge && percent >= 75) step3Badge.className = 'text-sky-400 font-bold';
-        if (step4Badge && percent >= 95) step4Badge.className = 'text-sky-400 font-bold';
+        // Update Circular SVG Progress Ring
+        if (progressRingCircle) {
+            const offset = RING_CIRCUMFERENCE - (percent / 100) * RING_CIRCUMFERENCE;
+            progressRingCircle.style.strokeDashoffset = offset;
+        }
+
+        // Backwards compatibility fill
+        if (progressBarFill) progressBarFill.style.width = `${percent}%`;
+
+        // Highlight step badges
+        if (step1Badge) step1Badge.style.color = percent >= 20 ? 'var(--text-primary)' : 'var(--text-tertiary)';
+        if (step2Badge) step2Badge.style.color = percent >= 50 ? 'var(--text-primary)' : 'var(--text-tertiary)';
+        if (step3Badge) step3Badge.style.color = percent >= 75 ? 'var(--text-primary)' : 'var(--text-tertiary)';
+        if (step4Badge) step4Badge.style.color = percent >= 95 ? 'var(--text-primary)' : 'var(--text-tertiary)';
     }
 
     function renderResults(data) {
-        if (meetingTitle) meetingTitle.innerHTML = `<i class="fa-solid fa-circle-play text-sky-400"></i> ${data.title}`;
-        if (meetingSubtitle) meetingSubtitle.textContent = 'Analysis complete! Explore summaries, takeaways, questions, and AI chat below.';
+        if (meetingTitle) meetingTitle.textContent = data.title;
+        if (meetingSubtitle) meetingSubtitle.textContent = 'Analysis complete. Explore summaries, practical steps, key decisions, topics, and interactive AI chat below.';
 
         if (summaryContent) summaryContent.textContent = data.summary;
         if (actionItemsContent) actionItemsContent.textContent = data.action_items;
@@ -275,8 +285,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reset chat stream with welcome message
         if (chatMessages) {
             chatMessages.innerHTML = `
-                <div class="chat-bubble ai bg-slate-900 border border-slate-800 text-slate-200 p-3.5 rounded-2xl max-w-[85%] text-xs leading-relaxed">
-                    🤖 I've analyzed <strong>${data.title}</strong>! Ask me any question about the video or audio content.
+                <div class="chat-bubble ai">
+                    I've analyzed <strong>${data.title}</strong>. Ask me any question about the video or audio content.
                 </div>
             `;
         }
@@ -287,9 +297,9 @@ document.addEventListener('DOMContentLoaded', () => {
         copyTranscriptBtn.addEventListener('click', () => {
             if (!transcriptTextarea.value) return;
             navigator.clipboard.writeText(transcriptTextarea.value);
-            copyTranscriptBtn.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i> <span>Copied!</span>`;
+            copyTranscriptBtn.textContent = 'Copied!';
             setTimeout(() => {
-                copyTranscriptBtn.innerHTML = `<i class="fa-solid fa-copy"></i> <span>Copy Transcript</span>`;
+                copyTranscriptBtn.textContent = 'Copy Transcript';
             }, 2000);
         });
     }
@@ -324,7 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chatInput.value = '';
 
         // Add typing indicator
-        const typingId = appendChatMessage('ai', 'Thinking... <i class="fa-solid fa-spinner animate-spin ml-1"></i>');
+        const typingId = appendChatMessage('ai', 'Thinking...');
 
         try {
             const res = await fetch('/api/chat', {
@@ -339,13 +349,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // Update AI message
             const typingElem = document.getElementById(typingId);
             if (typingElem) {
-                typingElem.innerHTML = `🤖 ${data.answer}`;
+                typingElem.innerHTML = data.answer;
             }
 
         } catch (err) {
             const typingElem = document.getElementById(typingId);
             if (typingElem) {
-                typingElem.innerHTML = `⚠️ Error: ${err.message}`;
+                typingElem.innerHTML = `Error: ${err.message}`;
             }
         }
     }
@@ -357,10 +367,10 @@ document.addEventListener('DOMContentLoaded', () => {
         div.id = msgId;
 
         if (role === 'user') {
-            div.className = 'chat-bubble user bg-gradient-to-r from-sky-600 to-indigo-600 text-white p-3.5 rounded-2xl max-w-[85%] text-xs leading-relaxed ml-auto shadow-md';
-            div.innerHTML = `👤 <b>You:</b> ${content}`;
+            div.className = 'chat-bubble user';
+            div.innerHTML = content;
         } else {
-            div.className = 'chat-bubble ai bg-slate-900 border border-slate-800 text-slate-200 p-3.5 rounded-2xl max-w-[85%] text-xs leading-relaxed mr-auto shadow-md';
+            div.className = 'chat-bubble ai';
             div.innerHTML = content;
         }
 
