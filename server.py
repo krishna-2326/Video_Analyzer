@@ -253,9 +253,10 @@ def export_report(req: ExportRequest):
         )
 
 
-# Serve Static Frontend Application at root "/"
+# Serve Static Frontend Application at root "/" and "/static"
 os.makedirs("static", exist_ok=True)
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static_assets")
+app.mount("/", StaticFiles(directory="static", html=True), name="static_root")
 
 
 if __name__ == "__main__":
