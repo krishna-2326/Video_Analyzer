@@ -11,3 +11,6 @@ services:
         sync: false
       - key: WHISPER_MODEL
         value: base
+      - key: YTDLP_COOKIE_FILE
+        value: cookies.txt
+        sync: false
