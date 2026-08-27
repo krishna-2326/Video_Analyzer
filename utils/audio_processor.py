@@ -214,8 +214,14 @@ def process_input(source: str) -> list:
         print("Detected YouTube URL. Downloading audio...")
         wav_path = download_youtube_audio(source)
     else:
-        print("Detected local file. Converting to WAV...")
+        print(f"Detected local file: {source}")
+        if not os.path.exists(source):
+            raise FileNotFoundError(f"File not found: {source}")
+        print("Converting to WAV...")
         wav_path = convert_to_wav(source)
+
+    if not os.path.exists(wav_path):
+        raise FileNotFoundError(f"WAV conversion failed. Output not found: {wav_path}")
 
     print("Chunking audio...")
     chunks = chunk_audio(wav_path)

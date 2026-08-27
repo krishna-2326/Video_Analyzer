@@ -1,199 +1,232 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // Global State
+    // ── State ─────────────────────────────────────────────────
     let currentSourceType = 'youtube';
     let selectedFile = null;
     let currentResults = null;
     let pollTimer = null;
 
-    // SVG Circular Progress Ring constants (r=50, circumference = 2 * PI * 50 = 314.159)
-    const RING_CIRCUMFERENCE = 314.159;
+    const RING_CIRCUMFERENCE = 263.89; // 2 * PI * 42
 
-    // DOM Element Lookups
-    const sourceYtBtn = document.getElementById('source-yt-btn');
-    const sourceFileBtn = document.getElementById('source-file-btn');
-    const ytSection = document.getElementById('youtube-input-section');
-    const fileSection = document.getElementById('file-input-section');
-    const ytUrlInput = document.getElementById('youtube-url-input');
-    const fileUploadInput = document.getElementById('file-upload-input');
-    const dropZone = document.getElementById('drop-zone');
-    const fileInfo = document.getElementById('file-info');
-    const fileNameSpan = document.getElementById('file-name');
-    const removeFileBtn = document.getElementById('remove-file');
-    const languageSelect = document.getElementById('language-select');
-    const processBtn = document.getElementById('process-btn');
+    // ── DOM Refs ──────────────────────────────────────────────
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => document.querySelectorAll(sel);
 
-    // Progress Elements
-    const progressCard = document.getElementById('progress-card');
-    const progressStatusText = document.getElementById('progress-status-text');
-    const progressBarFill = document.getElementById('progress-bar-fill');
-    const progressPercentage = document.getElementById('progress-percentage');
-    const progressRingCircle = document.getElementById('progress-ring-circle');
+    const els = {
+        sourceYtBtn:    $('#source-yt-btn'),
+        sourceFileBtn:  $('#source-file-btn'),
+        ytSection:      $('#youtube-input-section'),
+        fileSection:    $('#file-input-section'),
+        ytUrlInput:     $('#youtube-url-input'),
+        fileUpload:     $('#file-upload-input'),
+        dropZone:       $('#drop-zone'),
+        fileInfo:       $('#file-info'),
+        fileName:       $('#file-name'),
+        fileSize:       $('#file-size'),
+        removeFile:     $('#remove-file'),
+        langSelect:     $('#language-select'),
+        processBtn:     $('#process-btn'),
+        progressCard:   $('#progress-card'),
+        progressStatus: $('#progress-status-text'),
+        progressPct:    $('#progress-percentage'),
+        progressRing:   $('#progress-ring-circle'),
+        step1: $('#step-1-badge'),
+        step2: $('#step-2-badge'),
+        step3: $('#step-3-badge'),
+        step4: $('#step-4-badge'),
+        meetingTitle:     $('#meeting-title'),
+        meetingSubtitle:  $('#meeting-subtitle'),
+        summaryContent:   $('#summary-content'),
+        actionItems:      $('#action-items-content'),
+        keyDecisions:     $('#key-decisions-content'),
+        openQuestions:    $('#open-questions-content'),
+        transcriptArea:   $('#transcript-textarea'),
+        wordCount:        $('#word-count-badge'),
+        charCount:        $('#char-count-badge'),
+        readTime:         $('#read-time-badge'),
+        copyTranscript:   $('#copy-transcript-btn'),
+        searchTranscript: $('#search-transcript-btn'),
+        searchBar:        $('#transcript-search-bar'),
+        searchInput:      $('#transcript-search-input'),
+        searchCount:      $('#search-results-count'),
+        searchPrev:       $('#search-prev'),
+        searchNext:       $('#search-next'),
+        searchClose:      $('#search-close'),
+        chatMessages:     $('#chat-messages'),
+        chatInput:        $('#chat-input'),
+        sendChatBtn:      $('#send-chat-btn'),
+        exportTxt:        $('#export-txt-btn'),
+        exportPdf:        $('#export-pdf-btn'),
+    };
 
-    const step1Badge = document.getElementById('step-1-badge');
-    const step2Badge = document.getElementById('step-2-badge');
-    const step3Badge = document.getElementById('step-3-badge');
-    const step4Badge = document.getElementById('step-4-badge');
+    // ── Toast System ──────────────────────────────────────────
+    function showToast(type, title, message, duration = 4000) {
+        const container = $('#toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
 
-    // Content Display Elements
-    const meetingTitle = document.getElementById('meeting-title');
-    const meetingSubtitle = document.getElementById('meeting-subtitle');
-    const summaryContent = document.getElementById('summary-content');
-    const actionItemsContent = document.getElementById('action-items-content');
-    const keyDecisionsContent = document.getElementById('key-decisions-content');
-    const openQuestionsContent = document.getElementById('open-questions-content');
-    const transcriptTextarea = document.getElementById('transcript-textarea');
-    const wordCountBadge = document.getElementById('word-count-badge');
-    const charCountBadge = document.getElementById('char-count-badge');
-    const copyTranscriptBtn = document.getElementById('copy-transcript-btn');
+        const icons = { success: 'fa-circle-check', error: 'fa-circle-exclamation', info: 'fa-circle-info' };
+        toast.innerHTML = `
+            <i class="fa-solid ${icons[type] || icons.info} toast-icon"></i>
+            <div class="toast-body">
+                <div class="toast-title">${title}</div>
+                ${message ? `<div class="toast-message">${message}</div>` : ''}
+            </div>
+            <button class="toast-close" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></button>
+        `;
 
-    // Chat Elements
-    const chatMessages = document.getElementById('chat-messages');
-    const chatInput = document.getElementById('chat-input');
-    const sendChatBtn = document.getElementById('send-chat-btn');
-    const suggestionChips = document.querySelectorAll('.suggestion-chip');
+        toast.querySelector('.toast-close').addEventListener('click', () => removeToast(toast));
+        container.appendChild(toast);
 
-    // Export Elements
-    const exportTxtBtn = document.getElementById('export-txt-btn');
-    const exportPdfBtn = document.getElementById('export-pdf-btn');
+        setTimeout(() => removeToast(toast), duration);
+    }
 
-    // Tab Navigation
-    const mainTabs = document.querySelectorAll('.main-tab');
-    const tabContents = document.querySelectorAll('.tab-content');
+    function removeToast(toast) {
+        if (!toast || !toast.parentNode) return;
+        toast.classList.add('toast-exit');
+        setTimeout(() => toast.remove(), 300);
+    }
 
-    // --- Tab Switching ---
-    mainTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const target = tab.getAttribute('data-tab');
+    // ── Tab Switching ─────────────────────────────────────────
+    $$('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const target = btn.dataset.tab;
+            $$('.tab-btn').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+            btn.classList.add('active');
+            btn.setAttribute('aria-selected', 'true');
 
-            mainTabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-
-            tabContents.forEach(content => {
-                if (content.id === `tab-${target}`) {
-                    content.classList.remove('hidden');
-                    content.classList.add('active');
-                } else {
-                    content.classList.add('hidden');
-                    content.classList.remove('active');
-                }
+            $$('.tab-pane').forEach(pane => {
+                pane.classList.add('hidden');
+                pane.classList.remove('active');
             });
+
+            const targetPane = $(`#tab-${target}`);
+            if (targetPane) {
+                targetPane.classList.remove('hidden');
+                targetPane.classList.add('active');
+            }
         });
     });
 
-    // --- Source Switcher ---
-    if (sourceYtBtn && sourceFileBtn) {
-        sourceYtBtn.addEventListener('click', () => {
-            currentSourceType = 'youtube';
-            sourceYtBtn.classList.add('active');
-            sourceFileBtn.classList.remove('active');
-            if (ytSection) ytSection.classList.remove('hidden');
-            if (fileSection) fileSection.classList.add('hidden');
-        });
+    // ── Source Switcher ───────────────────────────────────────
+    els.sourceYtBtn?.addEventListener('click', () => {
+        currentSourceType = 'youtube';
+        els.sourceYtBtn.classList.add('active');
+        els.sourceYtBtn.setAttribute('aria-selected', 'true');
+        els.sourceFileBtn.classList.remove('active');
+        els.sourceFileBtn.setAttribute('aria-selected', 'false');
+        els.ytSection?.classList.remove('hidden');
+        els.fileSection?.classList.add('hidden');
+    });
 
-        sourceFileBtn.addEventListener('click', () => {
-            currentSourceType = 'file';
-            sourceFileBtn.classList.add('active');
-            sourceYtBtn.classList.remove('active');
-            if (fileSection) fileSection.classList.remove('hidden');
-            if (ytSection) ytSection.classList.add('hidden');
-        });
-    }
+    els.sourceFileBtn?.addEventListener('click', () => {
+        currentSourceType = 'file';
+        els.sourceFileBtn.classList.add('active');
+        els.sourceFileBtn.setAttribute('aria-selected', 'true');
+        els.sourceYtBtn.classList.remove('active');
+        els.sourceYtBtn.setAttribute('aria-selected', 'false');
+        els.fileSection?.classList.remove('hidden');
+        els.ytSection?.classList.add('hidden');
+    });
 
-    // --- File Drag & Drop ---
-    if (dropZone && fileUploadInput) {
-        dropZone.addEventListener('click', () => fileUploadInput.click());
+    // ── File Upload & Drag/Drop ───────────────────────────────
+    els.dropZone?.addEventListener('click', () => els.fileUpload?.click());
+    els.dropZone?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); els.fileUpload?.click(); }
+    });
 
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = 'var(--text-primary)';
-        });
+    els.dropZone?.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        els.dropZone.classList.add('dragover');
+    });
 
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.style.borderColor = 'var(--border-subtle)';
-        });
+    els.dropZone?.addEventListener('dragleave', () => {
+        els.dropZone.classList.remove('dragover');
+    });
 
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = 'var(--border-subtle)';
-            if (e.dataTransfer.files.length > 0) {
-                handleFileSelect(e.dataTransfer.files[0]);
-            }
-        });
+    els.dropZone?.addEventListener('drop', (e) => {
+        e.preventDefault();
+        els.dropZone.classList.remove('dragover');
+        if (e.dataTransfer.files.length > 0) handleFileSelect(e.dataTransfer.files[0]);
+    });
 
-        fileUploadInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleFileSelect(e.target.files[0]);
-            }
-        });
-    }
+    els.fileUpload?.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) handleFileSelect(e.target.files[0]);
+    });
 
     function handleFileSelect(file) {
         selectedFile = file;
-        if (fileNameSpan) fileNameSpan.textContent = file.name;
-        if (dropZone) dropZone.classList.add('hidden');
-        if (fileInfo) fileInfo.classList.remove('hidden');
+        if (els.fileName) els.fileName.textContent = file.name;
+        if (els.fileSize) els.fileSize.textContent = formatBytes(file.size);
+        els.dropZone?.classList.add('hidden');
+        els.fileInfo?.classList.remove('hidden');
     }
 
-    if (removeFileBtn) {
-        removeFileBtn.addEventListener('click', () => {
-            selectedFile = null;
-            if (fileUploadInput) fileUploadInput.value = '';
-            if (fileInfo) fileInfo.classList.add('hidden');
-            if (dropZone) dropZone.classList.remove('hidden');
-        });
+    function formatBytes(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
     }
 
-    // --- Process & Analyze Call ---
-    if (processBtn) {
-        processBtn.addEventListener('click', async () => {
-            const formData = new FormData();
-            formData.append('source_type', currentSourceType);
-            formData.append('language', languageSelect ? languageSelect.value : 'english');
+    els.removeFile?.addEventListener('click', () => {
+        selectedFile = null;
+        if (els.fileUpload) els.fileUpload.value = '';
+        els.fileInfo?.classList.add('hidden');
+        els.dropZone?.classList.remove('hidden');
+    });
 
-            if (currentSourceType === 'youtube') {
-                const url = ytUrlInput ? ytUrlInput.value.trim() : '';
-                if (!url) {
-                    alert('Please enter a YouTube video URL.');
-                    return;
-                }
-                formData.append('youtube_url', url);
-            } else {
-                if (!selectedFile) {
-                    alert('Please select an audio or video file to upload.');
-                    return;
-                }
-                formData.append('file', selectedFile);
+    // ── Process & Analyze ─────────────────────────────────────
+    els.processBtn?.addEventListener('click', async () => {
+        if (els.processBtn.disabled) return;
+
+        const formData = new FormData();
+        formData.append('source_type', currentSourceType);
+        formData.append('language', els.langSelect?.value || 'english');
+
+        if (currentSourceType === 'youtube') {
+            const url = els.ytUrlInput?.value.trim();
+            if (!url) {
+                showToast('error', 'URL Required', 'Please enter a YouTube video URL.');
+                els.ytUrlInput?.focus();
+                return;
             }
-
-            // Show progress UI
-            processBtn.disabled = true;
-            if (progressCard) progressCard.classList.remove('hidden');
-            
-            updateProgressUI('Starting video/audio analysis...', 10);
-
-            try {
-                // Start background job - returns in 0.05 seconds!
-                const response = await fetch('/api/process', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.detail || 'Failed to start processing job.');
-                }
-
-                const jobId = data.job_id;
-
-                // Start status polling every 1.5 seconds
-                pollJobStatus(jobId);
-
-            } catch (err) {
-                handleProcessingError(err.message);
+            formData.append('youtube_url', url);
+        } else {
+            if (!selectedFile) {
+                showToast('error', 'File Required', 'Please select an audio or video file to upload.');
+                return;
             }
-        });
+            formData.append('file', selectedFile);
+        }
+
+        setProcessing(true);
+        updateProgress('Starting analysis...', 10);
+
+        try {
+            const res = await fetch('/api/process', { method: 'POST', body: formData });
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.detail || 'Failed to start processing.');
+
+            showToast('info', 'Processing Started', 'Your media is being analyzed. This may take a few minutes.');
+            pollJobStatus(data.job_id);
+
+        } catch (err) {
+            handleProcessingError(err.message);
+        }
+    });
+
+    function setProcessing(active) {
+        if (els.processBtn) {
+            els.processBtn.disabled = active;
+            els.processBtn.querySelector('.btn-content')?.classList.toggle('hidden', active);
+            els.processBtn.querySelector('.btn-loading')?.classList.toggle('hidden', !active);
+        }
+        if (active) {
+            els.progressCard?.classList.remove('hidden');
+        }
     }
 
     function pollJobStatus(jobId) {
@@ -209,132 +242,269 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(data.detail || 'Failed to fetch status.');
                 }
 
-                updateProgressUI(data.status_text, data.percent);
+                updateProgress(data.status_text, data.percent);
 
                 if (data.status === 'complete') {
                     clearInterval(pollTimer);
                     currentResults = data.result;
                     renderResults(data.result);
-                    setTimeout(() => { if (progressCard) progressCard.classList.add('hidden'); }, 1500);
-                    if (processBtn) processBtn.disabled = false;
+                    showToast('success', 'Analysis Complete', 'Your video has been fully processed!');
+                    setTimeout(() => els.progressCard?.classList.add('hidden'), 2000);
+                    setProcessing(false);
                 } else if (data.status === 'failed') {
                     clearInterval(pollTimer);
                     handleProcessingError(data.error);
                 }
 
             } catch (err) {
-                console.error('Status poll error:', err);
+                console.error('Poll error:', err);
             }
         }, 1500);
     }
 
     function handleProcessingError(errorMsg) {
-        if (progressCard) progressCard.classList.add('hidden');
-        if (processBtn) processBtn.disabled = false;
+        els.progressCard?.classList.add('hidden');
+        setProcessing(false);
 
-        const isBotCheck = errorMsg.includes('Sign in to confirm') || 
-                           errorMsg.includes('bot') || 
-                           errorMsg.includes('auth') || 
-                           errorMsg.includes('YouTube download failed') ||
-                           errorMsg.includes('429');
+        const isBotCheck = /Sign in|bot|auth|YouTube download|429/i.test(errorMsg);
 
         if (isBotCheck && currentSourceType === 'youtube') {
-            alert('💡 YouTube URL downloading was restricted by YouTube bot detection on cloud hosting.\n\nPlease click "Upload File" instead to upload your video/audio file directly for fast, 100% reliable processing!');
-            if (sourceFileBtn) sourceFileBtn.click();
+            showToast('error', 'YouTube Blocked', 'YouTube blocked this request. Try uploading the file directly instead.');
+            els.sourceFileBtn?.click();
         } else {
-            alert(`⚠️ Error: ${errorMsg}`);
+            showToast('error', 'Processing Failed', errorMsg);
         }
     }
 
-    function updateProgressUI(statusText, percent) {
-        if (progressStatusText) progressStatusText.textContent = statusText;
-        if (progressPercentage) progressPercentage.textContent = `${percent}%`;
+    function updateProgress(statusText, percent) {
+        if (els.progressStatus) els.progressStatus.textContent = statusText;
+        if (els.progressPct) els.progressPct.textContent = `${percent}%`;
 
-        // Update Circular SVG Progress Ring
-        if (progressRingCircle) {
+        // SVG ring
+        if (els.progressRing) {
             const offset = RING_CIRCUMFERENCE - (percent / 100) * RING_CIRCUMFERENCE;
-            progressRingCircle.style.strokeDashoffset = offset;
+            els.progressRing.style.strokeDashoffset = offset;
         }
 
-        // Backwards compatibility fill
-        if (progressBarFill) progressBarFill.style.width = `${percent}%`;
-
-        // Highlight step badges
-        if (step1Badge) step1Badge.style.color = percent >= 20 ? 'var(--text-primary)' : 'var(--text-tertiary)';
-        if (step2Badge) step2Badge.style.color = percent >= 50 ? 'var(--text-primary)' : 'var(--text-tertiary)';
-        if (step3Badge) step3Badge.style.color = percent >= 75 ? 'var(--text-primary)' : 'var(--text-tertiary)';
-        if (step4Badge) step4Badge.style.color = percent >= 95 ? 'var(--text-primary)' : 'var(--text-tertiary)';
+        // Step badges
+        const steps = [
+            { el: els.step1, threshold: 20 },
+            { el: els.step2, threshold: 50 },
+            { el: els.step3, threshold: 75 },
+            { el: els.step4, threshold: 95 },
+        ];
+        steps.forEach(({ el, threshold }) => {
+            if (el) {
+                if (percent >= threshold) {
+                    el.classList.add('active');
+                } else {
+                    el.classList.remove('active');
+                }
+            }
+        });
     }
 
+    // ── Render Results ────────────────────────────────────────
     function renderResults(data) {
-        if (meetingTitle) meetingTitle.textContent = data.title;
-        if (meetingSubtitle) meetingSubtitle.textContent = 'Analysis complete. Explore summaries, practical steps, key decisions, topics, and interactive AI chat below.';
+        // Title
+        if (els.meetingTitle) {
+            els.meetingTitle.innerHTML = `<i class="fa-solid fa-chart-column"></i> ${escapeHtml(data.title)}`;
+        }
+        if (els.meetingSubtitle) {
+            els.meetingSubtitle.textContent = 'Analysis complete. Explore summaries, insights, and AI chat below.';
+        }
 
-        if (summaryContent) summaryContent.textContent = data.summary;
-        if (actionItemsContent) actionItemsContent.textContent = data.action_items;
-        if (keyDecisionsContent) keyDecisionsContent.textContent = data.key_decisions;
-        if (openQuestionsContent) openQuestionsContent.textContent = data.open_questions;
+        // Content
+        if (els.summaryContent) els.summaryContent.textContent = data.summary;
+        if (els.actionItems) els.actionItems.textContent = data.action_items;
+        if (els.keyDecisions) els.keyDecisions.textContent = data.key_decisions;
+        if (els.openQuestions) els.openQuestions.textContent = data.open_questions;
 
-        if (transcriptTextarea) transcriptTextarea.value = data.transcript;
+        // Transcript
+        if (els.transcriptArea) els.transcriptArea.value = data.transcript;
 
+        // Stats with animation
         const words = data.transcript.trim().split(/\s+/).length;
         const chars = data.transcript.length;
-        if (wordCountBadge) wordCountBadge.textContent = words.toLocaleString();
-        if (charCountBadge) charCountBadge.textContent = chars.toLocaleString();
+        const readMin = Math.max(1, Math.round(words / 200));
+        animateCounter(els.wordCount, words);
+        animateCounter(els.charCount, chars);
+        if (els.readTime) els.readTime.textContent = readMin;
 
-        // Reset chat stream with welcome message
-        if (chatMessages) {
-            chatMessages.innerHTML = `
-                <div class="chat-bubble ai">
-                    I've analyzed <strong>${data.title}</strong>. Ask me any question about the video or audio content.
+        // Reset chat
+        if (els.chatMessages) {
+            els.chatMessages.innerHTML = `
+                <div class="chat-msg ai">
+                    <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
+                    <div class="chat-bubble ai">
+                        I've analyzed <strong>${escapeHtml(data.title)}</strong>. Ask me anything about the content.
+                    </div>
                 </div>
             `;
         }
+
+        // Scroll to results
+        setTimeout(() => {
+            els.meetingTitle?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 300);
     }
 
-    // --- Copy Transcript ---
-    if (copyTranscriptBtn && transcriptTextarea) {
-        copyTranscriptBtn.addEventListener('click', () => {
-            if (!transcriptTextarea.value) return;
-            navigator.clipboard.writeText(transcriptTextarea.value);
-            copyTranscriptBtn.textContent = 'Copied!';
+    function animateCounter(el, target) {
+        if (!el) return;
+        const duration = 800;
+        const start = performance.now();
+        const from = parseInt(el.textContent) || 0;
+
+        function tick(now) {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            // ease-out quad
+            const eased = 1 - (1 - progress) * (1 - progress);
+            const current = Math.round(from + (target - from) * eased);
+            el.textContent = current.toLocaleString();
+            if (progress < 1) requestAnimationFrame(tick);
+        }
+
+        requestAnimationFrame(tick);
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // ── Copy Transcript ───────────────────────────────────────
+    els.copyTranscript?.addEventListener('click', async () => {
+        if (!els.transcriptArea?.value) return;
+        try {
+            await navigator.clipboard.writeText(els.transcriptArea.value);
+            showToast('success', 'Copied!', 'Transcript copied to clipboard.');
+            els.copyTranscript.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
             setTimeout(() => {
-                copyTranscriptBtn.textContent = 'Copy Transcript';
+                els.copyTranscript.innerHTML = '<i class="fa-regular fa-copy"></i> Copy';
             }, 2000);
-        });
+        } catch {
+            showToast('error', 'Copy Failed', 'Could not copy to clipboard.');
+        }
+    });
+
+    // ── Transcript Search ─────────────────────────────────────
+    let searchMatches = [];
+    let searchIndex = -1;
+
+    els.searchTranscript?.addEventListener('click', () => {
+        els.searchBar?.classList.toggle('hidden');
+        if (!els.searchBar?.classList.contains('hidden')) {
+            els.searchInput?.focus();
+        } else {
+            clearHighlight();
+        }
+    });
+
+    els.searchClose?.addEventListener('click', () => {
+        els.searchBar?.classList.add('hidden');
+        clearHighlight();
+    });
+
+    els.searchInput?.addEventListener('input', () => {
+        const query = els.searchInput.value.trim().toLowerCase();
+        highlightSearch(query);
+    });
+
+    els.searchPrev?.addEventListener('click', () => navigateSearch(-1));
+    els.searchNext?.addEventListener('click', () => navigateSearch(1));
+
+    els.searchInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.shiftKey ? navigateSearch(-1) : navigateSearch(1);
+        }
+        if (e.key === 'Escape') {
+            els.searchBar?.classList.add('hidden');
+            clearHighlight();
+        }
+    });
+
+    function highlightSearch(query) {
+        clearHighlight();
+        if (!query || !els.transcriptArea) return;
+
+        const text = els.transcriptArea.value;
+        const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        const matches = [...text.matchAll(regex)];
+        searchMatches = matches;
+        searchIndex = matches.length > 0 ? 0 : -1;
+
+        if (els.searchCount) {
+            els.searchCount.textContent = matches.length > 0 ? `${matches.length} found` : 'No matches';
+        }
+
+        if (matches.length > 0) {
+            scrollToMatch(0);
+        }
     }
 
-    // --- AI RAG Chat ---
-    if (sendChatBtn && chatInput) {
-        sendChatBtn.addEventListener('click', sendChatMessage);
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendChatMessage();
-        });
+    function navigateSearch(dir) {
+        if (searchMatches.length === 0) return;
+        searchIndex = (searchIndex + dir + searchMatches.length) % searchMatches.length;
+        scrollToMatch(searchIndex);
     }
 
-    suggestionChips.forEach(chip => {
+    function scrollToMatch(index) {
+        if (!els.transcriptArea || index < 0 || index >= searchMatches.length) return;
+        const match = searchMatches[index];
+        els.transcriptArea.focus();
+        els.transcriptArea.setSelectionRange(match.index, match.index + match[0].length);
+        if (els.searchCount) {
+            els.searchCount.textContent = `${index + 1}/${searchMatches.length}`;
+        }
+    }
+
+    function clearHighlight() {
+        searchMatches = [];
+        searchIndex = -1;
+        if (els.searchCount) els.searchCount.textContent = '';
+        if (els.searchInput) els.searchInput.value = '';
+    }
+
+    // ── AI Chat ───────────────────────────────────────────────
+    els.sendChatBtn?.addEventListener('click', sendChatMessage);
+    els.chatInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendChatMessage();
+        }
+    });
+
+    $$('.suggestion-chip').forEach(chip => {
         chip.addEventListener('click', () => {
-            if (chatInput) chatInput.value = chip.textContent.trim();
+            const q = chip.dataset.q || chip.textContent.trim();
+            if (els.chatInput) els.chatInput.value = q;
             sendChatMessage();
         });
     });
 
     async function sendChatMessage() {
-        if (!chatInput) return;
-        const question = chatInput.value.trim();
+        if (!els.chatInput) return;
+        const question = els.chatInput.value.trim();
         if (!question) return;
 
         if (!currentResults) {
-            alert('Please process a video or audio file first.');
+            showToast('info', 'No Content', 'Process a video or audio file first.');
             return;
         }
 
-        // Add user message to chat UI
-        appendChatMessage('user', question);
-        chatInput.value = '';
+        // Add user message
+        appendChat('user', escapeHtml(question));
+        els.chatInput.value = '';
+        if (els.sendChatBtn) els.sendChatBtn.disabled = true;
 
-        // Add typing indicator
-        const typingId = appendChatMessage('ai', 'Thinking...');
+        // Typing indicator
+        const typingId = appendChat('ai', `
+            <div class="typing-dots">
+                <span></span><span></span><span></span>
+            </div>
+        `, true);
 
         try {
             const res = await fetch('/api/chat', {
@@ -346,50 +516,61 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
             if (!res.ok) throw new Error(data.detail || 'Failed to get answer.');
 
-            // Update AI message
-            const typingElem = document.getElementById(typingId);
-            if (typingElem) {
-                typingElem.innerHTML = data.answer;
-            }
+            updateChatBubble(typingId, data.answer);
 
         } catch (err) {
-            const typingElem = document.getElementById(typingId);
-            if (typingElem) {
-                typingElem.innerHTML = `Error: ${err.message}`;
-            }
+            updateChatBubble(typingId, `<span style="color: var(--error);">Error: ${escapeHtml(err.message)}</span>`);
+        } finally {
+            if (els.sendChatBtn) els.sendChatBtn.disabled = false;
+            els.chatInput?.focus();
         }
     }
 
-    function appendChatMessage(role, content) {
-        if (!chatMessages) return;
+    function appendChat(role, content, isTyping = false) {
+        if (!els.chatMessages) return null;
+
         const msgId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4);
         const div = document.createElement('div');
         div.id = msgId;
+        div.className = `chat-msg ${role}`;
 
-        if (role === 'user') {
-            div.className = 'chat-bubble user';
-            div.innerHTML = content;
-        } else {
-            div.className = 'chat-bubble ai';
-            div.innerHTML = content;
-        }
+        const avatar = role === 'ai'
+            ? '<div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>'
+            : '<div class="chat-avatar"><i class="fa-solid fa-user"></i></div>';
 
-        chatMessages.appendChild(div);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        const bubbleClass = isTyping ? 'chat-bubble ai typing' : `chat-bubble ${role}`;
+        div.innerHTML = `${avatar}<div class="${bubbleClass}">${content}</div>`;
+
+        els.chatMessages.appendChild(div);
+        els.chatMessages.scrollTop = els.chatMessages.scrollHeight;
+
         return msgId;
     }
 
-    // --- Export Handlers ---
-    if (exportTxtBtn) exportTxtBtn.addEventListener('click', () => triggerExport('txt'));
-    if (exportPdfBtn) exportPdfBtn.addEventListener('click', () => triggerExport('pdf'));
+    function updateChatBubble(msgId, html) {
+        const el = document.getElementById(msgId);
+        if (!el) return;
+        const bubble = el.querySelector('.chat-bubble');
+        if (bubble) {
+            bubble.classList.remove('typing');
+            bubble.innerHTML = html;
+        }
+        els.chatMessages.scrollTop = els.chatMessages.scrollHeight;
+    }
+
+    // ── Export ────────────────────────────────────────────────
+    els.exportTxt?.addEventListener('click', () => triggerExport('txt'));
+    els.exportPdf?.addEventListener('click', () => triggerExport('pdf'));
 
     async function triggerExport(format) {
         if (!currentResults) {
-            alert('Please process a video or audio file first.');
+            showToast('info', 'No Content', 'Process a video or audio file first.');
             return;
         }
 
         try {
+            showToast('info', 'Generating...', `Preparing ${format.toUpperCase()} report.`, 2000);
+
             const res = await fetch('/api/export', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -406,10 +587,41 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.appendChild(a);
             a.click();
             a.remove();
+            window.URL.revokeObjectURL(url);
+
+            showToast('success', 'Downloaded', `${format.toUpperCase()} report saved.`);
 
         } catch (err) {
-            alert(`Export failed: ${err.message}`);
+            showToast('error', 'Export Failed', err.message);
         }
     }
+
+    // ── Keyboard Shortcuts ────────────────────────────────────
+    document.addEventListener('keydown', (e) => {
+        // Ctrl/Cmd + Enter to send chat
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            if (document.activeElement === els.chatInput) {
+                e.preventDefault();
+                sendChatMessage();
+            }
+        }
+    });
+
+    // ── Status pill updates ───────────────────────────────────
+    function setStatus(text) {
+        const statusText = $('.status-text');
+        if (statusText) statusText.textContent = text;
+    }
+
+    // Update status pill based on health check
+    fetch('/api/health').then(r => r.json()).then(data => {
+        if (data.status === 'ok') {
+            setStatus('Connected');
+        } else {
+            setStatus('Error');
+        }
+    }).catch(() => {
+        setStatus('Offline');
+    });
 
 });

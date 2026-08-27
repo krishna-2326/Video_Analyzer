@@ -72,7 +72,10 @@ def _run_background_processing(job_id: str, source: str, language: str, temp_pat
         # Step 1: Extract & Chunk Audio
         jobs_store[job_id]["status_text"] = "Downloading & extracting audio..."
         jobs_store[job_id]["percent"] = 20
-        chunks = process_input(source)
+        try:
+            chunks = process_input(source)
+        except Exception as e:
+            raise Exception(f"Audio extraction failed: {e}")
 
         # Step 2: Transcribe
         jobs_store[job_id]["status_text"] = "Transcribing audio (Speech-to-Text)..."
@@ -81,7 +84,10 @@ def _run_background_processing(job_id: str, source: str, language: str, temp_pat
         def update_progress(msg):
             jobs_store[job_id]["status_text"] = msg
 
-        transcript = transcribe_all(chunks, language=language, progress_callback=update_progress)
+        try:
+            transcript = transcribe_all(chunks, language=language, progress_callback=update_progress)
+        except Exception as e:
+            raise Exception(f"Transcription failed: {e}")
         if not transcript or not transcript.strip():
             raise Exception("Failed to extract audio transcript.")
 
@@ -133,7 +139,12 @@ def _run_background_processing(job_id: str, source: str, language: str, temp_pat
     finally:
         if temp_path and os.path.exists(temp_path):
             try:
-                os.remove(temp_path)
+                # Remove the temp directory and all its contents
+                temp_dir = os.path.dirname(temp_path)
+                if temp_dir and temp_dir.startswith(tempfile.gettempdir()):
+                    shutil.rmtree(temp_dir, ignore_errors=True)
+                else:
+                    os.remove(temp_path)
             except Exception:
                 pass
 
@@ -163,11 +174,13 @@ def process_video_or_audio(
         if not file:
             raise HTTPException(status_code=400, detail="No file was uploaded.")
 
+        # Use a safe temp directory and simple filename to avoid Windows path issues
+        temp_dir = tempfile.mkdtemp(prefix="vi_")
         ext = os.path.splitext(file.filename)[1] or ".mp4"
-        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=ext)
-        shutil.copyfileobj(file.file, temp_file)
-        temp_file.close()
-        temp_path = temp_file.name
+        safe_name = f"upload{ext}"
+        temp_path = os.path.join(temp_dir, safe_name)
+        with open(temp_path, "wb") as f:
+            shutil.copyfileobj(file.file, f)
         source = temp_path
     else:
         raise HTTPException(status_code=400, detail="Invalid source_type.")
